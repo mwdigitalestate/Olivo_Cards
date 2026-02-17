@@ -132,6 +132,7 @@ export const AdminDashboard = () => {
 export const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingUser, setDeletingUser] = useState(null);
 
   useEffect(() => {
     loadUsers();
@@ -157,6 +158,23 @@ export const AdminUsersPage = () => {
       toast.success('Rol actualizado');
     } catch (error) {
       toast.error('Error al actualizar rol');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este usuario? Se eliminarán también todas sus tarjetas y suscripciones.')) {
+      return;
+    }
+    
+    setDeletingUser(userId);
+    try {
+      await adminAPI.deleteUser(userId);
+      setUsers(users.filter(u => u.id !== userId));
+      toast.success('Usuario eliminado correctamente');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al eliminar usuario');
+    } finally {
+      setDeletingUser(null);
     }
   };
 
