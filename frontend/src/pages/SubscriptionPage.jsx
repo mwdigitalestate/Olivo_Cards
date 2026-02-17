@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { PricingCard } from '../components/PricingCard';
 import { Button } from '../components/ui/button';
-import { plansAPI, subscriptionsAPI } from '../lib/api';
+import { plansAPI, subscriptionsAPI, settingsAPI } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { Check, AlertCircle, Package, Calendar, CreditCard } from 'lucide-react';
@@ -20,6 +20,7 @@ export const SubscriptionPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(location.state?.selectedPlan || null);
   const [processing, setProcessing] = useState(false);
+  const [paypalConfig, setPaypalConfig] = useState({ client_id: null, mode: 'sandbox' });
 
   useEffect(() => {
     loadData();
@@ -27,12 +28,14 @@ export const SubscriptionPage = () => {
 
   const loadData = async () => {
     try {
-      const [plansRes, subRes] = await Promise.all([
+      const [plansRes, subRes, paypalRes] = await Promise.all([
         plansAPI.getAll(),
-        subscriptionsAPI.getCurrent()
+        subscriptionsAPI.getCurrent(),
+        settingsAPI.getPayPalClientId()
       ]);
       
       setPlans(plansRes.data);
+      setPaypalConfig(paypalRes.data);
       
       if (subRes.data) {
         setCurrentSubscription(subRes.data);
@@ -105,7 +108,7 @@ export const SubscriptionPage = () => {
     return (
       <DashboardLayout>
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
         </div>
       </DashboardLayout>
     );
@@ -117,26 +120,26 @@ export const SubscriptionPage = () => {
         {/* Header */}
         <div>
           <h1 
-            className="text-2xl md:text-3xl font-bold text-slate-900"
+            className="text-2xl md:text-3xl font-bold text-[#3C3C3C]"
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
             Mi Suscripción
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-[#808080] mt-1">
             Gestiona tu plan y facturación
           </p>
         </div>
 
         {/* Current subscription */}
         {currentSubscription && currentPlan && (
-          <div className="bg-white border border-slate-200 rounded-sm p-6">
+          <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-[#3C3C3C] flex items-center gap-2">
                   <Package className="w-5 h-5" />
                   Plan Actual: {currentPlan.name}
                 </h2>
-                <div className="mt-4 space-y-2 text-sm text-slate-600">
+                <div className="mt-4 space-y-2 text-sm text-[#5E5E5E]">
                   <p className="flex items-center gap-2">
                     <CreditCard className="w-4 h-4" />
                     {currentPlan.price === 0 ? 'Gratis' : `$${currentPlan.price}/${currentPlan.billing_period === 'monthly' ? 'mes' : 'año'}`}
@@ -153,11 +156,11 @@ export const SubscriptionPage = () => {
                   )}
                 </div>
                 <div className="mt-4">
-                  <h3 className="text-sm font-medium text-slate-700 mb-2">Características incluidas:</h3>
+                  <h3 className="text-sm font-medium text-[#3C3C3C] mb-2">Características incluidas:</h3>
                   <ul className="space-y-1">
                     {currentPlan.features?.map((feature, i) => (
-                      <li key={i} className="text-sm text-slate-600 flex items-center gap-2">
-                        <Check className="w-4 h-4 text-amber-500" />
+                      <li key={i} className="text-sm text-[#5E5E5E] flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#C5C51E]" />
                         {feature}
                       </li>
                     ))}
@@ -167,7 +170,7 @@ export const SubscriptionPage = () => {
               {currentPlan.price > 0 && (
                 <Button
                   variant="outline"
-                  className="text-red-600 hover:bg-red-50"
+                  className="text-red-600 hover:bg-red-50 border-red-200"
                   onClick={handleCancelSubscription}
                   data-testid="cancel-subscription-btn"
                 >
@@ -180,7 +183,7 @@ export const SubscriptionPage = () => {
 
         {/* Plans */}
         <div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-6">
+          <h2 className="text-xl font-semibold text-[#3C3C3C] mb-6">
             {currentSubscription ? 'Cambiar de Plan' : 'Selecciona un Plan'}
           </h2>
           
@@ -199,50 +202,64 @@ export const SubscriptionPage = () => {
 
         {/* PayPal checkout */}
         {selectedPlan && selectedPlan.price > 0 && (
-          <div className="bg-white border border-slate-200 rounded-sm p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">
+          <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
+            <h2 className="text-xl font-semibold text-[#3C3C3C] mb-4">
               Completar Pago - {selectedPlan.name}
             </h2>
-            <p className="text-slate-600 mb-6">
+            <p className="text-[#5E5E5E] mb-6">
               Total: <strong>${selectedPlan.price} USD</strong> / {selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}
             </p>
             
-            <div className="max-w-md">
-              <PayPalScriptProvider 
-                options={{ 
-                  clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID || "test",
-                  currency: "USD"
-                }}
-              >
-                <PayPalButtons
-                  style={{ layout: "vertical" }}
-                  createOrder={(data, actions) => {
-                    return actions.order.create({
-                      purchase_units: [{
-                        amount: {
-                          value: selectedPlan.price.toString()
-                        },
-                        description: `vCard Pro - Plan ${selectedPlan.name}`
-                      }]
-                    });
+            {paypalConfig.client_id ? (
+              <div className="max-w-md">
+                <PayPalScriptProvider 
+                  options={{ 
+                    clientId: paypalConfig.client_id,
+                    currency: "USD"
                   }}
-                  onApprove={(data, actions) => {
-                    return actions.order.capture().then(() => {
-                      handlePayPalApprove(data, selectedPlan);
-                    });
-                  }}
-                  onError={(err) => {
-                    console.error('PayPal error:', err);
-                    toast.error('Error en el proceso de pago');
-                  }}
-                />
-              </PayPalScriptProvider>
-            </div>
+                >
+                  <PayPalButtons
+                    style={{ layout: "vertical" }}
+                    createOrder={(data, actions) => {
+                      return actions.order.create({
+                        purchase_units: [{
+                          amount: {
+                            value: selectedPlan.price.toString()
+                          },
+                          description: `Olivo Cards - Plan ${selectedPlan.name}`
+                        }]
+                      });
+                    }}
+                    onApprove={(data, actions) => {
+                      return actions.order.capture().then(() => {
+                        handlePayPalApprove(data, selectedPlan);
+                      });
+                    }}
+                    onError={(err) => {
+                      console.error('PayPal error:', err);
+                      toast.error('Error en el proceso de pago');
+                    }}
+                  />
+                </PayPalScriptProvider>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-sm p-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-yellow-800">PayPal no configurado</p>
+                    <p className="text-sm text-yellow-600">
+                      El administrador necesita configurar PayPal para habilitar los pagos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <Button
               variant="ghost"
               onClick={() => setSelectedPlan(null)}
-              className="mt-4"
+              className="mt-4 text-[#5E5E5E]"
             >
               Cancelar
             </Button>
