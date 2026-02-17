@@ -73,6 +73,10 @@ export const adminAPI = {
   getSubscriptions: () => api.get('/admin/subscriptions'),
   getSettings: () => api.get('/admin/settings'),
   updatePayPalSettings: (data) => api.put('/admin/settings/paypal', data),
+  getEmailSettings: () => api.get('/admin/settings/email'),
+  updateEmailSettings: (data) => api.put('/admin/settings/email', data),
+  testEmail: () => api.post('/admin/test-email'),
+  checkExpiringSubscriptions: () => api.post('/admin/check-expiring-subscriptions'),
 };
 
 // Public Settings API
