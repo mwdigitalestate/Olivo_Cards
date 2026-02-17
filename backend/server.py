@@ -301,7 +301,7 @@ def generate_vcard_string(vcard: dict) -> str:
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/register", response_model=TokenResponse)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, background_tasks: BackgroundTasks):
     # Check if user exists
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
@@ -319,6 +319,15 @@ async def register(user_data: UserCreate):
     user_dict['created_at'] = user_dict['created_at'].isoformat()
     
     await db.users.insert_one(user_dict)
+    
+    # Send welcome email in background
+    async def send_welcome_email():
+        email_svc = await get_email_service()
+        if email_svc.is_configured():
+            subject, html = email_svc.get_welcome_template(user.full_name)
+            await email_svc.send_email(user.email, subject, html)
+    
+    background_tasks.add_task(send_welcome_email)
     
     # Create token
     token = create_access_token({"sub": user.id, "email": user.email, "role": user.role})
