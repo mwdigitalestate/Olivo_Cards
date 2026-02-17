@@ -651,6 +651,43 @@ async def get_all_subscriptions(admin: dict = Depends(get_admin_user)):
     subscriptions = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
     return subscriptions
 
+# ==================== SETTINGS ROUTES (PayPal Config) ====================
+
+@api_router.get("/admin/settings", response_model=SettingsResponse)
+async def get_settings(admin: dict = Depends(get_admin_user)):
+    settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
+    if not settings:
+        return SettingsResponse()
+    return SettingsResponse(
+        paypal_client_id=settings.get("paypal_client_id"),
+        paypal_mode=settings.get("paypal_mode", "sandbox")
+    )
+
+@api_router.put("/admin/settings/paypal")
+async def update_paypal_settings(settings_data: PayPalSettingsUpdate, admin: dict = Depends(get_admin_user)):
+    update_data = {k: v for k, v in settings_data.model_dump().items() if v is not None}
+    update_data["type"] = "paypal"
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.settings.update_one(
+        {"type": "paypal"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "PayPal settings updated successfully"}
+
+@api_router.get("/settings/paypal-client-id")
+async def get_paypal_client_id():
+    """Public endpoint to get PayPal client ID for frontend"""
+    settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
+    if not settings or not settings.get("paypal_client_id"):
+        return {"client_id": None, "mode": "sandbox"}
+    return {
+        "client_id": settings.get("paypal_client_id"),
+        "mode": settings.get("paypal_mode", "sandbox")
+    }
+
 # ==================== SEED DATA ====================
 
 @api_router.post("/seed-plans")
