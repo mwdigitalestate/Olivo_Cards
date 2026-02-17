@@ -467,11 +467,28 @@ export const AdminPlansPage = () => {
                 plan.is_popular ? 'border-[#C5C51E]' : 'border-[#C3C3C3]'
               }`}
             >
-              {plan.is_popular && (
-                <span className="inline-flex bg-[#C5C51E] text-black text-xs font-semibold px-2 py-1 rounded-full mb-3">
-                  Popular
-                </span>
-              )}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  {plan.is_popular && (
+                    <span className="inline-flex bg-[#C5C51E] text-black text-xs font-semibold px-2 py-1 rounded-full">
+                      Popular
+                    </span>
+                  )}
+                </div>
+                {/* PayPal sync status */}
+                {plan.price > 0 && (
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
+                    plan.paypal_plan_id 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .76-.655h6.468c2.937 0 5.107 2.037 5.107 4.794 0 3.76-2.866 6.136-6.472 6.136H8.103l-1.027 7.342zm7.237-17.472H9.126a.19.19 0 0 0-.188.161L7.778 12.1h3.033c2.597 0 4.667-1.75 4.667-4.167 0-1.828-1.257-4.068-3.165-4.068z"/>
+                    </svg>
+                    {plan.paypal_plan_id ? 'Sincronizado' : 'Sin sincronizar'}
+                  </span>
+                )}
+              </div>
               <h3 className="text-xl font-bold text-[#3C3C3C]">{plan.name}</h3>
               <p className="text-[#808080] text-sm mt-1">{plan.description}</p>
               <p className="text-3xl font-bold text-[#3C3C3C] mt-4">
@@ -489,7 +506,7 @@ export const AdminPlansPage = () => {
                   <li className="text-sm text-[#A2A2A2]">+{plan.features.length - 3} más</li>
                 )}
               </ul>
-              <div className="flex gap-2 mt-6">
+              <div className="flex flex-wrap gap-2 mt-6">
                 <Button
                   size="sm"
                   variant="outline"
@@ -500,6 +517,27 @@ export const AdminPlansPage = () => {
                   <Edit className="w-4 h-4 mr-1" />
                   Editar
                 </Button>
+                {plan.price > 0 && !plan.paypal_plan_id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-[#003087] text-[#003087]"
+                    onClick={() => handleSyncWithPayPal(plan.id)}
+                    disabled={syncingPlanId === plan.id}
+                    data-testid={`sync-plan-${plan.id}`}
+                  >
+                    {syncingPlanId === plan.id ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#003087]" />
+                    ) : (
+                      <>
+                        <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .76-.655h6.468c2.937 0 5.107 2.037 5.107 4.794 0 3.76-2.866 6.136-6.472 6.136H8.103l-1.027 7.342zm7.237-17.472H9.126a.19.19 0 0 0-.188.161L7.778 12.1h3.033c2.597 0 4.667-1.75 4.667-4.167 0-1.828-1.257-4.068-3.165-4.068z"/>
+                        </svg>
+                        Sincronizar
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
