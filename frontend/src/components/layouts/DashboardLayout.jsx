@@ -3,18 +3,19 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
 import { 
-  CreditCard, 
   LayoutDashboard, 
   Plus, 
-  Settings, 
   LogOut, 
   Menu, 
   X,
   Users,
   BarChart3,
-  Package
+  Package,
+  Settings
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/7whbj0dj_LOGO%20OLIVO.png";
 
 export const DashboardLayout = ({ children }) => {
   const { user, logout, isAdmin } = useAuth();
@@ -37,21 +38,24 @@ export const DashboardLayout = ({ children }) => {
     { path: '/admin', icon: BarChart3, label: 'Estadísticas' },
     { path: '/admin/users', icon: Users, label: 'Usuarios' },
     { path: '/admin/plans', icon: Package, label: 'Planes' },
+    { path: '/admin/settings', icon: Settings, label: 'Configuración' },
   ];
 
   const navItems = isAdmin ? [...userNavItems, ...adminNavItems] : userNavItems;
 
   return (
-    <div className="min-h-screen bg-slate-50" data-testid="dashboard-layout">
+    <div className="min-h-screen bg-[#F5F5F5]" data-testid="dashboard-layout">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r border-slate-200">
+        <div className="flex flex-col flex-grow bg-white border-r border-[#C3C3C3]">
           {/* Logo */}
-          <div className="flex items-center gap-2 h-16 px-6 border-b border-slate-200">
-            <div className="w-8 h-8 bg-slate-900 rounded-sm flex items-center justify-center">
-              <CreditCard className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-lg text-slate-900">vCard Pro</span>
+          <div className="flex items-center gap-2 h-16 px-6 border-b border-[#C3C3C3]">
+            <img 
+              src={LOGO_URL} 
+              alt="Olivo Cards" 
+              className="h-8 w-auto"
+            />
+            <span className="font-semibold text-lg text-[#3C3C3C]">Cards</span>
           </div>
 
           {/* Navigation */}
@@ -65,8 +69,8 @@ export const DashboardLayout = ({ children }) => {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-sm text-sm font-medium transition-colors",
                     isActive 
-                      ? "bg-slate-900 text-white" 
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      ? "bg-[#C5C51E] text-black" 
+                      : "text-[#5E5E5E] hover:bg-[#F0F0F0] hover:text-[#3C3C3C]"
                   )}
                   data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
@@ -78,21 +82,21 @@ export const DashboardLayout = ({ children }) => {
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-slate-200">
+          <div className="p-4 border-t border-[#C3C3C3]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center">
-                <span className="text-slate-600 font-medium">
+              <div className="w-10 h-10 bg-[#C5C51E] rounded-full flex items-center justify-center">
+                <span className="text-black font-medium">
                   {user?.full_name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{user?.full_name}</p>
-                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                <p className="text-sm font-medium text-[#3C3C3C] truncate">{user?.full_name}</p>
+                <p className="text-xs text-[#808080] truncate">{user?.email}</p>
               </div>
             </div>
             <Button 
               variant="outline" 
-              className="w-full justify-start gap-2"
+              className="w-full justify-start gap-2 border-[#A2A2A2] text-[#5E5E5E] hover:bg-[#F0F0F0]"
               onClick={handleLogout}
               data-testid="logout-btn"
             >
@@ -104,13 +108,15 @@ export const DashboardLayout = ({ children }) => {
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-[#C3C3C3]">
         <div className="flex items-center justify-between h-16 px-4">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-900 rounded-sm flex items-center justify-center">
-              <CreditCard className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-lg text-slate-900">vCard Pro</span>
+            <img 
+              src={LOGO_URL} 
+              alt="Olivo Cards" 
+              className="h-8 w-auto"
+            />
+            <span className="font-semibold text-lg text-[#3C3C3C]">Cards</span>
           </Link>
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -118,9 +124,9 @@ export const DashboardLayout = ({ children }) => {
             data-testid="mobile-sidebar-btn"
           >
             {sidebarOpen ? (
-              <X className="w-6 h-6 text-slate-900" />
+              <X className="w-6 h-6 text-[#3C3C3C]" />
             ) : (
-              <Menu className="w-6 h-6 text-slate-900" />
+              <Menu className="w-6 h-6 text-[#3C3C3C]" />
             )}
           </button>
         </div>
@@ -142,8 +148,8 @@ export const DashboardLayout = ({ children }) => {
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-sm text-sm font-medium transition-colors",
                       isActive 
-                        ? "bg-slate-900 text-white" 
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        ? "bg-[#C5C51E] text-black" 
+                        : "text-[#5E5E5E] hover:bg-[#F0F0F0] hover:text-[#3C3C3C]"
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -152,10 +158,10 @@ export const DashboardLayout = ({ children }) => {
                 );
               })}
             </nav>
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#C3C3C3]">
               <Button 
                 variant="outline" 
-                className="w-full justify-start gap-2"
+                className="w-full justify-start gap-2 border-[#A2A2A2]"
                 onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4" />
