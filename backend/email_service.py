@@ -173,8 +173,8 @@ class EmailService:
                     </p>
                     <div class="card-box">
                         <p style="color: #808080; margin-bottom: 15px;">Ya puedes compartir tu tarjeta con el código QR</p>
-                        <a href="https://olivocards.com/card/{card_id}" class="btn">Ver mi tarjeta</a>
-                        <a href="https://olivocards.com/dashboard" class="btn-outline">Ir al Dashboard</a>
+                        <a href="{APP_URL}/card/{card_id}" class="btn">Ver mi tarjeta</a>
+                        <a href="{APP_URL}/dashboard" class="btn-outline">Ir al Dashboard</a>
                     </div>
                     <p style="color: #808080; font-size: 14px;">
                         Tip: Puedes descargar el código QR e imprimirlo o compartirlo digitalmente.
