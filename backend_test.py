@@ -236,6 +236,111 @@ class VCardAPITester:
             "DELETE", 
             f"vcards/{self.created_vcard_id}", 
             200
+    def test_admin_login(self):
+        """Test admin login"""
+        admin_data = {
+            "email": "admin@vcardpro.com",
+            "password": "admin123"
+        }
+        
+        success, response = self.run_test(
+            "Admin Login", 
+            "POST", 
+            "auth/login", 
+            200,
+            data=admin_data
+        )
+        
+        if success and response:
+            self.admin_token = response.get('access_token')
+            user_info = response.get('user', {})
+            print(f"   Admin user: {user_info.get('email')}")
+            print(f"   Admin role: {user_info.get('role')}")
+        
+        return success, response
+
+    def test_admin_stats(self):
+        """Test admin stats endpoint"""
+        if not self.admin_token:
+            print("   Skipping - no admin token")
+            return False, {}
+        
+        # Temporarily set admin token for this test
+        original_token = self.token
+        self.token = self.admin_token
+        
+        success, response = self.run_test("Admin Stats", "GET", "admin/stats", 200)
+        
+        if success and response:
+            print(f"   Total users: {response.get('total_users', 0)}")
+            print(f"   Total vCards: {response.get('total_vcards', 0)}")
+            print(f"   Active subscriptions: {response.get('active_subscriptions', 0)}")
+        
+        # Restore original token
+        self.token = original_token
+        return success, response
+
+    def test_admin_settings_get(self):
+        """Test admin settings GET endpoint"""
+        if not self.admin_token:
+            print("   Skipping - no admin token")
+            return False, {}
+        
+        # Temporarily set admin token for this test
+        original_token = self.token
+        self.token = self.admin_token
+        
+        success, response = self.run_test("Admin Settings GET", "GET", "admin/settings", 200)
+        
+        if success and response:
+            print(f"   PayPal Client ID present: {'paypal_client_id' in response and response['paypal_client_id']}")
+            print(f"   PayPal Mode: {response.get('paypal_mode', 'sandbox')}")
+        
+        # Restore original token
+        self.token = original_token
+        return success, response
+
+    def test_admin_settings_update(self):
+        """Test admin PayPal settings update"""
+        if not self.admin_token:
+            print("   Skipping - no admin token")
+            return False, {}
+        
+        # Temporarily set admin token for this test
+        original_token = self.token
+        self.token = self.admin_token
+        
+        settings_data = {
+            "paypal_client_id": "test_client_id_12345",
+            "paypal_mode": "sandbox"
+        }
+        
+        success, response = self.run_test(
+            "Admin PayPal Settings Update", 
+            "PUT", 
+            "admin/settings/paypal", 
+            200,
+            data=settings_data
+        )
+        
+        # Restore original token
+        self.token = original_token
+        return success, response
+
+    def test_paypal_client_id_endpoint(self):
+        """Test public PayPal client ID endpoint"""
+        success, response = self.run_test(
+            "Get PayPal Client ID", 
+            "GET", 
+            "settings/paypal-client-id", 
+            200
+        )
+        
+        if success and response:
+            print(f"   Client ID present: {'client_id' in response and response['client_id']}")
+            print(f"   Mode: {response.get('mode', 'sandbox')}")
+        
+        return success, response
         )
 
 def main():
