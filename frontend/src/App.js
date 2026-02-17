@@ -10,7 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import VCardEditorPage from './pages/VCardEditorPage';
 import PublicVCardPage from './pages/PublicVCardPage';
 import SubscriptionPage from './pages/SubscriptionPage';
-import { AdminDashboard, AdminUsersPage, AdminPlansPage } from './pages/AdminPages';
+import { AdminDashboard, AdminUsersPage, AdminPlansPage, AdminSettingsPage } from './pages/AdminPages';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -18,8 +18,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
       </div>
     );
   }
@@ -41,8 +41,8 @@ const PublicRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
       </div>
     );
   }
@@ -135,6 +135,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <AdminPlansPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/settings" 
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminSettingsPage />
           </ProtectedRoute>
         } 
       />
