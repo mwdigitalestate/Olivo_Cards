@@ -876,11 +876,340 @@ async def get_paypal_client_id():
     """Public endpoint to get PayPal client ID for frontend"""
     settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
     if not settings or not settings.get("paypal_client_id"):
-        return {"client_id": None, "mode": "sandbox"}
+        return {"client_id": None, "mode": "sandbox", "has_secret": False}
     return {
         "client_id": settings.get("paypal_client_id"),
-        "mode": settings.get("paypal_mode", "sandbox")
+        "mode": settings.get("paypal_mode", "sandbox"),
+        "has_secret": bool(settings.get("paypal_secret"))
     }
+
+# ==================== PAYPAL RECURRING SUBSCRIPTIONS ====================
+
+@api_router.post("/admin/paypal/sync-plan")
+async def sync_plan_with_paypal(request: SyncPayPalPlanRequest, admin: dict = Depends(get_admin_user)):
+    """Create or sync a plan with PayPal for recurring payments"""
+    # Get the plan
+    plan = await db.plans.find_one({"id": request.plan_id, "is_active": True}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    if plan.get("price", 0) == 0:
+        raise HTTPException(status_code=400, detail="No se puede sincronizar un plan gratuito con PayPal")
+    
+    # Get PayPal service
+    paypal_svc = await get_paypal_service()
+    if not paypal_svc.is_configured():
+        raise HTTPException(status_code=400, detail="PayPal no está configurado. Configura el Client ID y Secret primero.")
+    
+    # Check if plan already has a PayPal plan ID
+    if plan.get("paypal_plan_id"):
+        # Verify it still exists in PayPal
+        existing = await paypal_svc.get_plan_details(plan["paypal_plan_id"])
+        if existing:
+            return {"message": "Plan ya sincronizado con PayPal", "paypal_plan_id": plan["paypal_plan_id"]}
+    
+    # Create the PayPal billing plan
+    paypal_plan = await paypal_svc.create_billing_plan(
+        name=plan["name"],
+        description=plan.get("description", f"Suscripción {plan['name']}"),
+        price=plan["price"],
+        billing_period=plan.get("billing_period", "monthly")
+    )
+    
+    if not paypal_plan:
+        raise HTTPException(status_code=500, detail="Error al crear el plan en PayPal")
+    
+    # Save PayPal plan ID to our database
+    await db.plans.update_one(
+        {"id": request.plan_id},
+        {"$set": {"paypal_plan_id": paypal_plan["id"]}}
+    )
+    
+    return {
+        "message": "Plan sincronizado con PayPal correctamente",
+        "paypal_plan_id": paypal_plan["id"]
+    }
+
+@api_router.post("/admin/paypal/sync-all-plans")
+async def sync_all_plans_with_paypal(admin: dict = Depends(get_admin_user)):
+    """Sync all paid plans with PayPal"""
+    paypal_svc = await get_paypal_service()
+    if not paypal_svc.is_configured():
+        raise HTTPException(status_code=400, detail="PayPal no está configurado")
+    
+    # Get all active paid plans without PayPal plan ID
+    plans = await db.plans.find({
+        "is_active": True,
+        "price": {"$gt": 0}
+    }, {"_id": 0}).to_list(100)
+    
+    synced = 0
+    errors = []
+    
+    for plan in plans:
+        if plan.get("paypal_plan_id"):
+            continue
+        
+        try:
+            paypal_plan = await paypal_svc.create_billing_plan(
+                name=plan["name"],
+                description=plan.get("description", f"Suscripción {plan['name']}"),
+                price=plan["price"],
+                billing_period=plan.get("billing_period", "monthly")
+            )
+            
+            if paypal_plan:
+                await db.plans.update_one(
+                    {"id": plan["id"]},
+                    {"$set": {"paypal_plan_id": paypal_plan["id"]}}
+                )
+                synced += 1
+            else:
+                errors.append(plan["name"])
+        except Exception as e:
+            errors.append(f"{plan['name']}: {str(e)}")
+    
+    return {
+        "message": f"Sincronización completada",
+        "synced": synced,
+        "errors": errors
+    }
+
+@api_router.post("/subscriptions/paypal/create")
+async def create_paypal_subscription(
+    data: PayPalSubscriptionCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a PayPal subscription for recurring payments"""
+    # Get the plan
+    plan = await db.plans.find_one({"id": data.plan_id, "is_active": True}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    if not plan.get("paypal_plan_id"):
+        raise HTTPException(
+            status_code=400, 
+            detail="Este plan no está configurado para pagos recurrentes. Contacta al administrador."
+        )
+    
+    # Get PayPal service
+    paypal_svc = await get_paypal_service()
+    if not paypal_svc.is_configured():
+        raise HTTPException(status_code=400, detail="PayPal no está configurado")
+    
+    # Create PayPal subscription
+    subscription = await paypal_svc.create_subscription(
+        paypal_plan_id=plan["paypal_plan_id"],
+        return_url=data.return_url,
+        cancel_url=data.cancel_url
+    )
+    
+    if not subscription:
+        raise HTTPException(status_code=500, detail="Error al crear la suscripción en PayPal")
+    
+    # Find approval URL
+    approval_url = None
+    for link in subscription.get("links", []):
+        if link.get("rel") == "approve":
+            approval_url = link.get("href")
+            break
+    
+    return {
+        "subscription_id": subscription["id"],
+        "approval_url": approval_url,
+        "status": subscription.get("status")
+    }
+
+@api_router.post("/subscriptions/paypal/activate")
+async def activate_paypal_subscription(
+    paypal_subscription_id: str,
+    plan_id: str,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(get_current_user)
+):
+    """Activate a subscription after PayPal approval"""
+    # Verify the subscription with PayPal
+    paypal_svc = await get_paypal_service()
+    if not paypal_svc.is_configured():
+        raise HTTPException(status_code=400, detail="PayPal no está configurado")
+    
+    # Get subscription details from PayPal
+    paypal_sub = await paypal_svc.get_subscription_details(paypal_subscription_id)
+    if not paypal_sub:
+        raise HTTPException(status_code=400, detail="No se pudo verificar la suscripción con PayPal")
+    
+    if paypal_sub.get("status") not in ["ACTIVE", "APPROVED"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"La suscripción no está activa. Estado: {paypal_sub.get('status')}"
+        )
+    
+    # Get plan
+    plan = await db.plans.find_one({"id": plan_id, "is_active": True}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    
+    # Cancel any existing active subscription
+    existing_sub = await db.subscriptions.find_one(
+        {"user_id": current_user['id'], "status": "active"},
+        {"_id": 0}
+    )
+    if existing_sub and existing_sub.get("paypal_subscription_id"):
+        # Cancel in PayPal
+        await paypal_svc.cancel_subscription(
+            existing_sub["paypal_subscription_id"],
+            "Usuario cambió de plan"
+        )
+    
+    await db.subscriptions.update_many(
+        {"user_id": current_user['id'], "status": "active"},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    # Create new subscription in our database
+    # For recurring subscriptions, end_date is managed by PayPal
+    subscription = Subscription(
+        user_id=current_user['id'],
+        plan_id=plan_id,
+        paypal_subscription_id=paypal_subscription_id,
+        is_recurring=True,
+        status="active"
+    )
+    
+    sub_dict = subscription.model_dump()
+    sub_dict['start_date'] = sub_dict['start_date'].isoformat()
+    sub_dict['end_date'] = None  # Recurring subscriptions don't have a fixed end date
+    sub_dict['created_at'] = sub_dict['created_at'].isoformat()
+    
+    await db.subscriptions.insert_one(sub_dict)
+    
+    # Update user's subscription_id
+    await db.users.update_one(
+        {"id": current_user['id']},
+        {"$set": {"subscription_id": subscription.id}}
+    )
+    
+    # Send subscription email in background
+    async def send_subscription_email():
+        email_svc = await get_email_service()
+        if email_svc.is_configured():
+            subject, html = email_svc.get_subscription_template(
+                current_user['full_name'],
+                plan['name'],
+                plan['price'],
+                "Renovación automática"
+            )
+            await email_svc.send_email(current_user['email'], subject, html)
+    
+    background_tasks.add_task(send_subscription_email)
+    
+    return SubscriptionResponse(
+        id=subscription.id,
+        user_id=subscription.user_id,
+        plan_id=subscription.plan_id,
+        status=subscription.status,
+        start_date=sub_dict['start_date'],
+        end_date=None,
+        paypal_subscription_id=paypal_subscription_id,
+        is_recurring=True
+    )
+
+@api_router.post("/subscriptions/cancel-recurring")
+async def cancel_recurring_subscription(current_user: dict = Depends(get_current_user)):
+    """Cancel a recurring PayPal subscription"""
+    # Find active subscription
+    subscription = await db.subscriptions.find_one(
+        {"user_id": current_user['id'], "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not subscription:
+        raise HTTPException(status_code=404, detail="No hay suscripción activa")
+    
+    # If it's a recurring subscription, cancel in PayPal
+    if subscription.get("is_recurring") and subscription.get("paypal_subscription_id"):
+        paypal_svc = await get_paypal_service()
+        if paypal_svc.is_configured():
+            success = await paypal_svc.cancel_subscription(
+                subscription["paypal_subscription_id"],
+                "Usuario solicitó cancelación"
+            )
+            if not success:
+                logger.warning(f"Could not cancel PayPal subscription: {subscription['paypal_subscription_id']}")
+    
+    # Update our database
+    await db.subscriptions.update_one(
+        {"id": subscription['id']},
+        {"$set": {"status": "cancelled"}}
+    )
+    
+    await db.users.update_one(
+        {"id": current_user['id']},
+        {"$set": {"subscription_id": None}}
+    )
+    
+    return {"message": "Suscripción cancelada correctamente"}
+
+@api_router.post("/webhooks/paypal")
+async def paypal_webhook(request: Request):
+    """Handle PayPal webhook events for subscription management"""
+    try:
+        body = await request.json()
+        event_type = body.get("event_type", "")
+        resource = body.get("resource", {})
+        
+        logger.info(f"PayPal webhook received: {event_type}")
+        
+        if event_type == "BILLING.SUBSCRIPTION.ACTIVATED":
+            # Subscription was activated
+            paypal_sub_id = resource.get("id")
+            logger.info(f"Subscription activated: {paypal_sub_id}")
+        
+        elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":
+            # Subscription was cancelled
+            paypal_sub_id = resource.get("id")
+            await db.subscriptions.update_one(
+                {"paypal_subscription_id": paypal_sub_id},
+                {"$set": {"status": "cancelled"}}
+            )
+            logger.info(f"Subscription cancelled: {paypal_sub_id}")
+        
+        elif event_type == "BILLING.SUBSCRIPTION.EXPIRED":
+            # Subscription expired
+            paypal_sub_id = resource.get("id")
+            await db.subscriptions.update_one(
+                {"paypal_subscription_id": paypal_sub_id},
+                {"$set": {"status": "expired"}}
+            )
+            logger.info(f"Subscription expired: {paypal_sub_id}")
+        
+        elif event_type == "BILLING.SUBSCRIPTION.SUSPENDED":
+            # Subscription suspended (payment failed)
+            paypal_sub_id = resource.get("id")
+            await db.subscriptions.update_one(
+                {"paypal_subscription_id": paypal_sub_id},
+                {"$set": {"status": "suspended"}}
+            )
+            logger.info(f"Subscription suspended: {paypal_sub_id}")
+        
+        elif event_type == "PAYMENT.SALE.COMPLETED":
+            # Recurring payment completed
+            paypal_sub_id = resource.get("billing_agreement_id")
+            logger.info(f"Payment completed for subscription: {paypal_sub_id}")
+        
+        return {"status": "ok"}
+    
+    except Exception as e:
+        logger.error(f"PayPal webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@api_router.get("/plans/{plan_id}")
+async def get_plan_details(plan_id: str):
+    """Get a single plan's details including PayPal plan ID"""
+    plan = await db.plans.find_one({"id": plan_id, "is_active": True}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan no encontrado")
+    return plan
 
 # ==================== SEED DATA ====================
 
