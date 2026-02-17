@@ -89,15 +89,6 @@ export const adminAPI = {
   syncAllPlansWithPayPal: () => api.post('/admin/paypal/sync-all-plans'),
 };
 
-// Plans API
-export const plansAPI = {
-  getAll: () => api.get('/plans'),
-  getOne: (id) => api.get(`/plans/${id}`),
-  create: (data) => api.post('/plans', data),
-  update: (id, data) => api.put(`/plans/${id}`, data),
-  delete: (id) => api.delete(`/plans/${id}`),
-};
-
 // Public Settings API
 export const settingsAPI = {
   getPayPalClientId: () => api.get('/settings/paypal-client-id'),
