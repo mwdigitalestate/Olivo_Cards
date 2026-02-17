@@ -189,7 +189,18 @@ export const PublicLayout = ({ children }) => {
             </div>
           </div>
           <div className="border-t border-[#5E5E5E] mt-8 pt-8 text-center text-[#A2A2A2] text-sm">
-            © {new Date().getFullYear()} Olivo Cards. Todos los derechos reservados.
+            <p>© {new Date().getFullYear()} Olivo Cards. Todos los derechos reservados.</p>
+            <p className="mt-2">
+              Desarrollado por{' '}
+              <a 
+                href="https://maldivasweb.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[#C5C51E] hover:text-[#E7E723] font-medium transition-colors"
+              >
+                MW Digital Estate
+              </a>
+            </p>
           </div>
         </div>
       </footer>
