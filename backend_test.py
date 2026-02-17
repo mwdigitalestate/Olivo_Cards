@@ -343,7 +343,6 @@ class VCardAPITester:
             print(f"   Mode: {response.get('mode', 'sandbox')}")
         
         return success, response
-        )
 
 def main():
     print("🚀 Starting Olivo Cards API Testing...")
