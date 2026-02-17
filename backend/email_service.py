@@ -80,7 +80,7 @@ class EmailService:
                         Ya puedes crear tu primera tarjeta digital con código QR que funciona sin internet.
                     </p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://olivocards.com/dashboard" class="btn">Crear mi primera tarjeta</a>
+                        <a href="{APP_URL}/dashboard" class="btn">Crear mi primera tarjeta</a>
                     </div>
                     <p style="color: #808080; font-size: 14px;">
                         Si tienes alguna pregunta, no dudes en contactarnos.
