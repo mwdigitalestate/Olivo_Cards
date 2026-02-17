@@ -55,7 +55,6 @@ export const DashboardLayout = ({ children }) => {
               alt="Olivo Cards" 
               className="h-8 w-auto"
             />
-            <span className="font-semibold text-lg text-[#3C3C3C]">Cards</span>
           </div>
 
           {/* Navigation */}
@@ -116,7 +115,6 @@ export const DashboardLayout = ({ children }) => {
               alt="Olivo Cards" 
               className="h-8 w-auto"
             />
-            <span className="font-semibold text-lg text-[#3C3C3C]">Cards</span>
           </Link>
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}

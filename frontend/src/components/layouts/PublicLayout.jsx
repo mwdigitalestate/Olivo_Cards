@@ -32,7 +32,6 @@ export const PublicLayout = ({ children }) => {
                 alt="Olivo Cards" 
                 className="h-10 w-auto"
               />
-              <span className="font-semibold text-xl text-[#3C3C3C]">Cards</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -166,7 +165,6 @@ export const PublicLayout = ({ children }) => {
                   alt="Olivo Cards" 
                   className="h-10 w-auto brightness-0 invert"
                 />
-                <span className="font-semibold text-xl">Cards</span>
               </div>
               <p className="text-[#A2A2A2] max-w-md">
                 Tarjetas digitales profesionales con códigos QR que funcionan sin internet. 

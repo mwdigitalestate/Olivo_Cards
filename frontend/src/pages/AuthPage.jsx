@@ -65,7 +65,6 @@ export const AuthPage = ({ mode = 'login' }) => {
               alt="Olivo Cards" 
               className="h-10 w-auto"
             />
-            <span className="font-semibold text-xl text-[#3C3C3C]">Cards</span>
           </Link>
 
           {/* Header */}
