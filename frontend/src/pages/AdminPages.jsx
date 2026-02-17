@@ -15,9 +15,11 @@ import {
   Edit,
   Trash2,
   Save,
-  Settings,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Send,
+  Bell
 } from 'lucide-react';
 import {
   Dialog,
