@@ -227,7 +227,7 @@ class EmailService:
                         Para continuar disfrutando de todos los beneficios de tu plan, te invitamos a renovar tu suscripción.
                     </p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://olivocards.com/dashboard/subscription" class="btn">Renovar mi plan</a>
+                        <a href="{APP_URL}/dashboard/subscription" class="btn">Renovar mi plan</a>
                     </div>
                 </div>
                 <div class="footer">
