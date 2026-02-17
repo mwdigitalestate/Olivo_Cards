@@ -247,15 +247,31 @@ export const AdminUsersPage = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-[#A2A2A2]"
-                      onClick={() => handleRoleChange(user.id, user.role === 'admin' ? 'user' : 'admin')}
-                      data-testid={`toggle-role-${user.id}`}
-                    >
-                      {user.role === 'admin' ? 'Hacer Usuario' : 'Hacer Admin'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#A2A2A2]"
+                        onClick={() => handleRoleChange(user.id, user.role === 'admin' ? 'user' : 'admin')}
+                        data-testid={`toggle-role-${user.id}`}
+                      >
+                        {user.role === 'admin' ? 'Hacer Usuario' : 'Hacer Admin'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-200 text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteUser(user.id)}
+                        disabled={deletingUser === user.id}
+                        data-testid={`delete-user-${user.id}`}
+                      >
+                        {deletingUser === user.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
