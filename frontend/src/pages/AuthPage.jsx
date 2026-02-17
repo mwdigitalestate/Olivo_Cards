@@ -4,7 +4,9 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
-import { CreditCard, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/7whbj0dj_LOGO%20OLIVO.png";
 
 export const AuthPage = ({ mode = 'login' }) => {
   const navigate = useNavigate();
@@ -34,7 +36,6 @@ export const AuthPage = ({ mode = 'login' }) => {
         await register(formData.email, formData.password, formData.full_name);
       }
       
-      // Redirect based on selected plan or just to dashboard
       if (selectedPlan && selectedPlan.price > 0) {
         navigate('/dashboard/subscription', { state: { selectedPlan } });
       } else {
@@ -59,21 +60,23 @@ export const AuthPage = ({ mode = 'login' }) => {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-slate-900 rounded-sm flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-semibold text-xl text-slate-900">vCard Pro</span>
+            <img 
+              src={LOGO_URL} 
+              alt="Olivo Cards" 
+              className="h-10 w-auto"
+            />
+            <span className="font-semibold text-xl text-[#3C3C3C]">Cards</span>
           </Link>
 
           {/* Header */}
           <div className="mb-8">
             <h1 
-              className="text-3xl font-bold text-slate-900 mb-2"
+              className="text-3xl font-bold text-[#3C3C3C] mb-2"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               {isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
             </h1>
-            <p className="text-slate-600">
+            <p className="text-[#5E5E5E]">
               {isLogin 
                 ? 'Ingresa tus credenciales para acceder a tu cuenta' 
                 : 'Comienza a crear tarjetas digitales profesionales'
@@ -83,8 +86,8 @@ export const AuthPage = ({ mode = 'login' }) => {
 
           {/* Selected plan badge */}
           {selectedPlan && (
-            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-sm">
-              <p className="text-sm text-amber-800">
+            <div className="mb-6 p-4 bg-[#E7E723]/20 border border-[#C5C51E] rounded-sm">
+              <p className="text-sm text-[#818113]">
                 Plan seleccionado: <strong>{selectedPlan.name}</strong>
                 {selectedPlan.price > 0 && ` - $${selectedPlan.price}/${selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}`}
               </p>
@@ -103,9 +106,9 @@ export const AuthPage = ({ mode = 'login' }) => {
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="full_name">Nombre completo</Label>
+                <Label htmlFor="full_name" className="text-[#3C3C3C]">Nombre completo</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A2A2A2]" />
                   <Input
                     id="full_name"
                     name="full_name"
@@ -113,7 +116,7 @@ export const AuthPage = ({ mode = 'login' }) => {
                     value={formData.full_name}
                     onChange={handleChange}
                     placeholder="Juan Pérez"
-                    className="pl-10"
+                    className="pl-10 border-[#C3C3C3] focus:border-[#C5C51E] focus:ring-[#C5C51E]"
                     required={!isLogin}
                     data-testid="input-fullname"
                   />
@@ -122,9 +125,9 @@ export const AuthPage = ({ mode = 'login' }) => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="email" className="text-[#3C3C3C]">Correo electrónico</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A2A2A2]" />
                 <Input
                   id="email"
                   name="email"
@@ -132,7 +135,7 @@ export const AuthPage = ({ mode = 'login' }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="tu@email.com"
-                  className="pl-10"
+                  className="pl-10 border-[#C3C3C3] focus:border-[#C5C51E] focus:ring-[#C5C51E]"
                   required
                   data-testid="input-email"
                 />
@@ -140,9 +143,9 @@ export const AuthPage = ({ mode = 'login' }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password" className="text-[#3C3C3C]">Contraseña</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A2A2A2]" />
                 <Input
                   id="password"
                   name="password"
@@ -150,7 +153,7 @@ export const AuthPage = ({ mode = 'login' }) => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="pl-10"
+                  className="pl-10 border-[#C3C3C3] focus:border-[#C5C51E] focus:ring-[#C5C51E]"
                   required
                   minLength={6}
                   data-testid="input-password"
@@ -160,7 +163,7 @@ export const AuthPage = ({ mode = 'login' }) => {
 
             <Button 
               type="submit" 
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+              className="w-full bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
               disabled={loading}
               data-testid="submit-btn"
             >
@@ -169,11 +172,11 @@ export const AuthPage = ({ mode = 'login' }) => {
           </form>
 
           {/* Toggle */}
-          <p className="mt-6 text-center text-slate-600">
+          <p className="mt-6 text-center text-[#5E5E5E]">
             {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
             <Link 
               to={isLogin ? '/register' : '/login'}
-              className="text-slate-900 font-medium hover:underline"
+              className="text-[#818113] font-medium hover:underline"
               data-testid="toggle-auth-link"
             >
               {isLogin ? 'Regístrate' : 'Inicia sesión'}
@@ -189,16 +192,21 @@ export const AuthPage = ({ mode = 'login' }) => {
           alt="Modern office"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-slate-900/60" />
+        <div className="absolute inset-0 bg-[#3C3C3C]/60" />
         <div className="absolute inset-0 flex items-center justify-center p-12">
           <div className="text-center text-white">
+            <img 
+              src={LOGO_URL} 
+              alt="Olivo Cards" 
+              className="h-16 w-auto mx-auto mb-6"
+            />
             <h2 
               className="text-4xl font-bold mb-4"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               Networking del futuro
             </h2>
-            <p className="text-slate-200 max-w-md">
+            <p className="text-[#C3C3C3] max-w-md">
               Deja de imprimir tarjetas de papel. Crea conexiones profesionales 
               con tarjetas digitales que funcionan en cualquier lugar.
             </p>

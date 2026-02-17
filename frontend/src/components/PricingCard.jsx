@@ -17,7 +17,7 @@ export const PricingCard = ({
     <div 
       className={cn(
         "relative bg-white border rounded-sm p-6 flex flex-col",
-        isPopular ? "border-amber-500 shadow-lg" : "border-slate-200",
+        isPopular ? "border-[#C5C51E] shadow-lg" : "border-[#C3C3C3]",
         className
       )}
       data-testid={`pricing-card-${plan.name.toLowerCase()}`}
@@ -25,7 +25,7 @@ export const PricingCard = ({
       {/* Popular badge */}
       {isPopular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+          <span className="bg-[#C5C51E] text-black text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
             Más Popular
           </span>
         </div>
@@ -33,21 +33,21 @@ export const PricingCard = ({
 
       {/* Plan name */}
       <h3 
-        className="text-xl font-bold text-slate-900 mb-2"
+        className="text-xl font-bold text-[#3C3C3C] mb-2"
         style={{ fontFamily: 'Playfair Display, serif' }}
       >
         {plan.name}
       </h3>
       
-      <p className="text-slate-500 text-sm mb-4">{plan.description}</p>
+      <p className="text-[#808080] text-sm mb-4">{plan.description}</p>
 
       {/* Price */}
       <div className="mb-6">
-        <span className="text-4xl font-bold text-slate-900">
+        <span className="text-4xl font-bold text-[#3C3C3C]">
           {isFree ? 'Gratis' : `$${plan.price}`}
         </span>
         {!isFree && (
-          <span className="text-slate-500 text-sm ml-1">
+          <span className="text-[#808080] text-sm ml-1">
             /{plan.billing_period === 'monthly' ? 'mes' : 'año'}
           </span>
         )}
@@ -57,8 +57,8 @@ export const PricingCard = ({
       <ul className="space-y-3 mb-6 flex-grow">
         {plan.features?.map((feature, index) => (
           <li key={index} className="flex items-start gap-2">
-            <Check className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <span className="text-slate-600 text-sm">{feature}</span>
+            <Check className="w-5 h-5 text-[#C5C51E] flex-shrink-0 mt-0.5" />
+            <span className="text-[#5E5E5E] text-sm">{feature}</span>
           </li>
         ))}
       </ul>
@@ -68,10 +68,10 @@ export const PricingCard = ({
         onClick={() => onSelect?.(plan)}
         disabled={isCurrentPlan || loading}
         className={cn(
-          "w-full",
+          "w-full font-semibold",
           isPopular 
-            ? "bg-slate-900 hover:bg-slate-800 text-white" 
-            : "bg-white border-slate-300 text-slate-900 hover:bg-slate-50"
+            ? "bg-[#C5C51E] hover:bg-[#A3A318] text-black" 
+            : "bg-white border-[#A2A2A2] text-[#3C3C3C] hover:bg-[#F5F5F5]"
         )}
         variant={isPopular ? "default" : "outline"}
         data-testid={`select-plan-${plan.name.toLowerCase()}`}
