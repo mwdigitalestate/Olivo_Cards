@@ -2,8 +2,12 @@ import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+# Get app URL from environment variable for email links
+APP_URL = os.environ.get('APP_URL', os.environ.get('REACT_APP_BACKEND_URL', 'https://olivocards.com'))
 
 class EmailService:
     def __init__(self, smtp_email: str = None, smtp_password: str = None):
