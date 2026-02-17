@@ -707,7 +707,7 @@ async def get_all_subscriptions(admin: dict = Depends(get_admin_user)):
     subscriptions = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
     return subscriptions
 
-# ==================== SETTINGS ROUTES (PayPal Config) ====================
+# ==================== SETTINGS ROUTES (PayPal & Email Config) ====================
 
 @api_router.get("/admin/settings", response_model=SettingsResponse)
 async def get_settings(admin: dict = Depends(get_admin_user)):
@@ -716,6 +716,7 @@ async def get_settings(admin: dict = Depends(get_admin_user)):
         return SettingsResponse()
     return SettingsResponse(
         paypal_client_id=settings.get("paypal_client_id"),
+        paypal_secret=settings.get("paypal_secret"),
         paypal_mode=settings.get("paypal_mode", "sandbox")
     )
 
@@ -732,6 +733,91 @@ async def update_paypal_settings(settings_data: PayPalSettingsUpdate, admin: dic
     )
     
     return {"message": "PayPal settings updated successfully"}
+
+@api_router.get("/admin/settings/email", response_model=EmailSettingsResponse)
+async def get_email_settings(admin: dict = Depends(get_admin_user)):
+    settings = await db.settings.find_one({"type": "email"}, {"_id": 0})
+    if not settings:
+        return EmailSettingsResponse()
+    return EmailSettingsResponse(
+        smtp_email=settings.get("smtp_email"),
+        is_configured=bool(settings.get("smtp_email") and settings.get("smtp_password"))
+    )
+
+@api_router.put("/admin/settings/email")
+async def update_email_settings(settings_data: EmailSettingsUpdate, admin: dict = Depends(get_admin_user)):
+    update_data = {k: v for k, v in settings_data.model_dump().items() if v is not None}
+    update_data["type"] = "email"
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.settings.update_one(
+        {"type": "email"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Email settings updated successfully"}
+
+@api_router.post("/admin/test-email")
+async def test_email_settings(admin: dict = Depends(get_admin_user)):
+    """Send a test email to verify configuration"""
+    email_svc = await get_email_service()
+    if not email_svc.is_configured():
+        raise HTTPException(status_code=400, detail="Email not configured")
+    
+    subject = "Test - Olivo Cards Email Configuration"
+    html = """
+    <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>¡Configuración exitosa!</h2>
+        <p>Este es un email de prueba de Olivo Cards.</p>
+        <p>Tu configuración de email está funcionando correctamente.</p>
+    </div>
+    """
+    
+    success = await email_svc.send_email(admin['email'], subject, html)
+    if success:
+        return {"message": "Test email sent successfully"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send test email")
+
+@api_router.post("/admin/check-expiring-subscriptions")
+async def check_expiring_subscriptions(background_tasks: BackgroundTasks, admin: dict = Depends(get_admin_user)):
+    """Check and notify users with subscriptions expiring in 3 days"""
+    email_svc = await get_email_service()
+    if not email_svc.is_configured():
+        return {"message": "Email not configured, skipping notifications", "notified": 0}
+    
+    # Find subscriptions expiring in 3 days
+    now = datetime.now(timezone.utc)
+    three_days_later = now + timedelta(days=3)
+    
+    expiring = await db.subscriptions.find({
+        "status": "active",
+        "end_date": {"$lte": three_days_later.isoformat(), "$gte": now.isoformat()}
+    }, {"_id": 0}).to_list(100)
+    
+    notified = 0
+    for sub in expiring:
+        user = await db.users.find_one({"id": sub['user_id']}, {"_id": 0})
+        plan = await db.plans.find_one({"id": sub['plan_id']}, {"_id": 0})
+        
+        if user and plan:
+            end_date = datetime.fromisoformat(sub['end_date'].replace('Z', '+00:00'))
+            days_remaining = (end_date - now).days
+            
+            async def send_expiring_email(u=user, p=plan, d=days_remaining, ed=sub['end_date']):
+                subject, html = email_svc.get_plan_expiring_template(
+                    u['full_name'],
+                    p['name'],
+                    d,
+                    ed[:10]
+                )
+                await email_svc.send_email(u['email'], subject, html)
+            
+            background_tasks.add_task(send_expiring_email)
+            notified += 1
+    
+    return {"message": f"Expiring subscription notifications sent", "notified": notified}
 
 @api_router.get("/settings/paypal-client-id")
 async def get_paypal_client_id():
