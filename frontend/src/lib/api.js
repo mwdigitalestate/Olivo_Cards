@@ -71,6 +71,13 @@ export const adminAPI = {
   getStats: () => api.get('/admin/stats'),
   updateUserRole: (userId, role) => api.put(`/admin/users/${userId}/role?role=${role}`),
   getSubscriptions: () => api.get('/admin/subscriptions'),
+  getSettings: () => api.get('/admin/settings'),
+  updatePayPalSettings: (data) => api.put('/admin/settings/paypal', data),
+};
+
+// Public Settings API
+export const settingsAPI = {
+  getPayPalClientId: () => api.get('/settings/paypal-client-id'),
 };
 
 // Seed data
