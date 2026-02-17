@@ -61,7 +61,16 @@ class PayPalSettingsUpdate(BaseModel):
 
 class SettingsResponse(BaseModel):
     paypal_client_id: Optional[str] = None
+    paypal_secret: Optional[str] = None
     paypal_mode: str = "sandbox"
+
+class EmailSettingsUpdate(BaseModel):
+    smtp_email: Optional[str] = None
+    smtp_password: Optional[str] = None
+
+class EmailSettingsResponse(BaseModel):
+    smtp_email: Optional[str] = None
+    is_configured: bool = False
 
 class UserBase(BaseModel):
     email: EmailStr
