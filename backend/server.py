@@ -52,6 +52,17 @@ async def get_email_service() -> EmailService:
         email_service.smtp_password = settings.get("smtp_password")
     return email_service
 
+# Helper to get PayPal service with current config
+async def get_paypal_service() -> PayPalService:
+    settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
+    if settings:
+        paypal_service.configure(
+            client_id=settings.get("paypal_client_id", ""),
+            client_secret=settings.get("paypal_secret", ""),
+            mode=settings.get("paypal_mode", "sandbox")
+        )
+    return paypal_service
+
 # ==================== MODELS ====================
 
 # Settings Model for PayPal configuration
