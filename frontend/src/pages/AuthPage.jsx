@@ -6,7 +6,7 @@ import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/7whbj0dj_LOGO%20OLIVO.png";
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/hhh3zakr_LOGO%20OLIVO%20CARDS.png";
 
 export const AuthPage = ({ mode = 'login' }) => {
   const navigate = useNavigate();
