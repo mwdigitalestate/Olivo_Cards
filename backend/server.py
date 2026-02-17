@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
 from jose import jwt, JWTError
+from email_service import email_service, EmailService
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -42,11 +43,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Helper to get email service with current config
+async def get_email_service() -> EmailService:
+    settings = await db.settings.find_one({"type": "email"}, {"_id": 0})
+    if settings:
+        email_service.smtp_email = settings.get("smtp_email")
+        email_service.smtp_password = settings.get("smtp_password")
+    return email_service
+
 # ==================== MODELS ====================
 
 # Settings Model for PayPal configuration
 class PayPalSettingsUpdate(BaseModel):
     paypal_client_id: Optional[str] = None
+    paypal_secret: Optional[str] = None
     paypal_mode: Optional[str] = "sandbox"  # sandbox or live
 
 class SettingsResponse(BaseModel):
