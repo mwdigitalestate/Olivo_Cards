@@ -531,14 +531,23 @@ export const AdminPlansPage = () => {
   );
 };
 
-// New Settings Page for PayPal Configuration
+// New Settings Page for PayPal and Email Configuration
 export const AdminSettingsPage = () => {
-  const [settings, setSettings] = useState({
+  const [paypalSettings, setPaypalSettings] = useState({
     paypal_client_id: '',
+    paypal_secret: '',
     paypal_mode: 'sandbox'
   });
+  const [emailSettings, setEmailSettings] = useState({
+    smtp_email: '',
+    smtp_password: '',
+    is_configured: false
+  });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingPaypal, setSavingPaypal] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [checkingExpiring, setCheckingExpiring] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -546,10 +555,19 @@ export const AdminSettingsPage = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await adminAPI.getSettings();
-      setSettings({
-        paypal_client_id: response.data.paypal_client_id || '',
-        paypal_mode: response.data.paypal_mode || 'sandbox'
+      const [paypalRes, emailRes] = await Promise.all([
+        adminAPI.getSettings(),
+        adminAPI.getEmailSettings()
+      ]);
+      setPaypalSettings({
+        paypal_client_id: paypalRes.data.paypal_client_id || '',
+        paypal_secret: paypalRes.data.paypal_secret || '',
+        paypal_mode: paypalRes.data.paypal_mode || 'sandbox'
+      });
+      setEmailSettings({
+        smtp_email: emailRes.data.smtp_email || '',
+        smtp_password: '',
+        is_configured: emailRes.data.is_configured || false
       });
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -558,15 +576,52 @@ export const AdminSettingsPage = () => {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSavePaypal = async () => {
+    setSavingPaypal(true);
     try {
-      await adminAPI.updatePayPalSettings(settings);
+      await adminAPI.updatePayPalSettings(paypalSettings);
       toast.success('Configuración de PayPal guardada correctamente');
     } catch (error) {
-      toast.error('Error al guardar la configuración');
+      toast.error('Error al guardar la configuración de PayPal');
     } finally {
-      setSaving(false);
+      setSavingPaypal(false);
+    }
+  };
+
+  const handleSaveEmail = async () => {
+    setSavingEmail(true);
+    try {
+      await adminAPI.updateEmailSettings(emailSettings);
+      toast.success('Configuración de Email guardada correctamente');
+      loadSettings();
+    } catch (error) {
+      toast.error('Error al guardar la configuración de Email');
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    try {
+      await adminAPI.testEmail();
+      toast.success('Email de prueba enviado correctamente');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al enviar email de prueba');
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
+  const handleCheckExpiring = async () => {
+    setCheckingExpiring(true);
+    try {
+      const response = await adminAPI.checkExpiringSubscriptions();
+      toast.success(`Se notificaron ${response.data.notified} usuarios con planes por vencer`);
+    } catch (error) {
+      toast.error('Error al verificar suscripciones');
+    } finally {
+      setCheckingExpiring(false);
     }
   };
 
@@ -592,9 +647,127 @@ export const AdminSettingsPage = () => {
             Configuración
           </h1>
           <p className="text-[#808080] mt-1">
-            Configura los métodos de pago y otras opciones
+            Configura los métodos de pago y notificaciones
           </p>
         </div>
+
+        {/* Email Configuration */}
+        <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-[#C5C51E] rounded-sm flex items-center justify-center">
+              <Mail className="w-6 h-6 text-black" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-[#3C3C3C]">Configuración de Email (Gmail)</h2>
+              <p className="text-sm text-[#808080]">Configura Gmail para enviar notificaciones automáticas</p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-[#3C3C3C]">Correo Gmail</Label>
+              <Input
+                type="email"
+                value={emailSettings.smtp_email}
+                onChange={(e) => setEmailSettings({ ...emailSettings, smtp_email: e.target.value })}
+                placeholder="tucorreo@gmail.com"
+                className="border-[#C3C3C3]"
+                data-testid="smtp-email-input"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[#3C3C3C]">Contraseña de Aplicación</Label>
+              <Input
+                type="password"
+                value={emailSettings.smtp_password}
+                onChange={(e) => setEmailSettings({ ...emailSettings, smtp_password: e.target.value })}
+                placeholder="xxxx xxxx xxxx xxxx"
+                className="border-[#C3C3C3] font-mono"
+                data-testid="smtp-password-input"
+              />
+              <p className="text-xs text-[#808080]">
+                NO es tu contraseña de Gmail. Es una "Contraseña de Aplicación" de 16 caracteres.
+              </p>
+            </div>
+
+            {/* Status indicator */}
+            <div className={`p-4 rounded-sm flex items-center gap-3 ${
+              emailSettings.is_configured 
+                ? 'bg-green-50 border border-green-200' 
+                : 'bg-yellow-50 border border-yellow-200'
+            }`}>
+              {emailSettings.is_configured ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Email configurado</p>
+                    <p className="text-xs text-green-600">Las notificaciones automáticas están activas</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">Email no configurado</p>
+                    <p className="text-xs text-yellow-600">No se enviarán notificaciones automáticas</p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleSaveEmail}
+                disabled={savingEmail}
+                className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
+                data-testid="save-email-settings-btn"
+              >
+                {savingEmail ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" />Guardar Email</>}
+              </Button>
+              
+              {emailSettings.is_configured && (
+                <Button
+                  onClick={handleTestEmail}
+                  disabled={testingEmail}
+                  variant="outline"
+                  className="border-[#A2A2A2]"
+                  data-testid="test-email-btn"
+                >
+                  {testingEmail ? 'Enviando...' : <><Send className="w-4 h-4 mr-2" />Enviar Prueba</>}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        {emailSettings.is_configured && (
+          <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-[#3C3C3C] rounded-sm flex items-center justify-center">
+                <Bell className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-[#3C3C3C]">Notificaciones Manuales</h2>
+                <p className="text-sm text-[#808080]">Envía notificaciones a usuarios con planes por vencer</p>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleCheckExpiring}
+              disabled={checkingExpiring}
+              variant="outline"
+              className="border-[#A2A2A2]"
+              data-testid="check-expiring-btn"
+            >
+              {checkingExpiring ? 'Verificando...' : <><Bell className="w-4 h-4 mr-2" />Notificar Planes por Vencer (3 días)</>}
+            </Button>
+            <p className="text-xs text-[#808080] mt-2">
+              Esto enviará un email a todos los usuarios cuyo plan vence en los próximos 3 días.
+            </p>
+          </div>
+        )}
 
         {/* PayPal Configuration */}
         <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
@@ -609,18 +782,29 @@ export const AdminSettingsPage = () => {
           </div>
 
           <div className="space-y-6">
-            {/* PayPal Client ID */}
             <div className="space-y-2">
               <Label className="text-[#3C3C3C]">PayPal Client ID</Label>
               <Input
-                value={settings.paypal_client_id}
-                onChange={(e) => setSettings({ ...settings, paypal_client_id: e.target.value })}
+                value={paypalSettings.paypal_client_id}
+                onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_client_id: e.target.value })}
                 placeholder="Ingresa tu PayPal Client ID"
                 className="border-[#C3C3C3] font-mono text-sm"
                 data-testid="paypal-client-id-input"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[#3C3C3C]">PayPal Secret (para suscripciones recurrentes)</Label>
+              <Input
+                type="password"
+                value={paypalSettings.paypal_secret}
+                onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_secret: e.target.value })}
+                placeholder="Ingresa tu PayPal Secret"
+                className="border-[#C3C3C3] font-mono text-sm"
+                data-testid="paypal-secret-input"
+              />
               <p className="text-xs text-[#808080]">
-                Puedes obtener tu Client ID en{' '}
+                Obtén ambas credenciales en{' '}
                 <a 
                   href="https://developer.paypal.com/dashboard/applications" 
                   target="_blank" 
@@ -632,7 +816,6 @@ export const AdminSettingsPage = () => {
               </p>
             </div>
 
-            {/* PayPal Mode */}
             <div className="space-y-2">
               <Label className="text-[#3C3C3C]">Modo</Label>
               <div className="flex gap-4">
@@ -641,8 +824,8 @@ export const AdminSettingsPage = () => {
                     type="radio"
                     name="paypal_mode"
                     value="sandbox"
-                    checked={settings.paypal_mode === 'sandbox'}
-                    onChange={(e) => setSettings({ ...settings, paypal_mode: e.target.value })}
+                    checked={paypalSettings.paypal_mode === 'sandbox'}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_mode: e.target.value })}
                     className="accent-[#C5C51E]"
                   />
                   <span className="text-[#3C3C3C]">Sandbox (Pruebas)</span>
@@ -652,25 +835,22 @@ export const AdminSettingsPage = () => {
                     type="radio"
                     name="paypal_mode"
                     value="live"
-                    checked={settings.paypal_mode === 'live'}
-                    onChange={(e) => setSettings({ ...settings, paypal_mode: e.target.value })}
+                    checked={paypalSettings.paypal_mode === 'live'}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_mode: e.target.value })}
                     className="accent-[#C5C51E]"
                   />
                   <span className="text-[#3C3C3C]">Live (Producción)</span>
                 </label>
               </div>
-              <p className="text-xs text-[#808080]">
-                Usa "Sandbox" para pruebas y "Live" cuando estés listo para recibir pagos reales.
-              </p>
             </div>
 
             {/* Status indicator */}
             <div className={`p-4 rounded-sm flex items-center gap-3 ${
-              settings.paypal_client_id 
+              paypalSettings.paypal_client_id 
                 ? 'bg-green-50 border border-green-200' 
                 : 'bg-yellow-50 border border-yellow-200'
             }`}>
-              {settings.paypal_client_id ? (
+              {paypalSettings.paypal_client_id ? (
                 <>
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   <div>
@@ -689,37 +869,26 @@ export const AdminSettingsPage = () => {
               )}
             </div>
 
-            {/* Save Button */}
             <Button
-              onClick={handleSave}
-              disabled={saving}
+              onClick={handleSavePaypal}
+              disabled={savingPaypal}
               className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
               data-testid="save-paypal-settings-btn"
             >
-              {saving ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2" />
-                  Guardando...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Guardar Configuración
-                </>
-              )}
+              {savingPaypal ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" />Guardar PayPal</>}
             </Button>
           </div>
         </div>
 
         {/* Instructions */}
         <div className="bg-[#F5F5F5] border border-[#C3C3C3] rounded-sm p-6">
-          <h3 className="font-semibold text-[#3C3C3C] mb-3">¿Cómo obtener tus credenciales de PayPal?</h3>
+          <h3 className="font-semibold text-[#3C3C3C] mb-3">¿Cómo obtener la Contraseña de Aplicación de Gmail?</h3>
           <ol className="list-decimal list-inside space-y-2 text-sm text-[#5E5E5E]">
-            <li>Ve a <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="text-[#818113] hover:underline">developer.paypal.com</a> e inicia sesión</li>
-            <li>Accede al Dashboard y ve a "Apps & Credentials"</li>
-            <li>Crea una nueva app o usa una existente</li>
-            <li>Copia el "Client ID" y pégalo arriba</li>
-            <li>Para producción, asegúrate de usar las credenciales de "Live"</li>
+            <li>Ve a <a href="https://myaccount.google.com/" target="_blank" rel="noopener noreferrer" className="text-[#818113] hover:underline">myaccount.google.com</a> e inicia sesión</li>
+            <li>Ve a <strong>Seguridad</strong> → Activa la <strong>Verificación en 2 pasos</strong></li>
+            <li>Una vez activada, ve a <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer" className="text-[#818113] hover:underline">Contraseñas de aplicación</a></li>
+            <li>Selecciona "Otra (nombre personalizado)" y escribe "Olivo Cards"</li>
+            <li>Click en "Generar" y copia la contraseña de 16 caracteres</li>
           </ol>
         </div>
       </div>
