@@ -1,0 +1,169 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "E1 Corporate SaaS",
+      "tone": "Professional, Trustworthy, Efficient, High-Contrast Swiss Style",
+      "archetype": "The Old Money Tech",
+      "design_principles": [
+        "Fusion over Imitation: Mix Swiss Poster layouts with SaaS density.",
+        "Emotion First: Trust and Stability above all.",
+        "Content is King: Data must be legible; vCards must be scannable.",
+        "Zoom In: Focus on the individual (headshots) and the connection (QR).",
+        "Negative Space: Luxury is space. Don't crowd the card."
+      ]
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Playfair Display, serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-5xl md:text-7xl font-bold tracking-tight leading-none",
+        "h2": "text-3xl md:text-5xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body_lg": "text-lg leading-relaxed",
+        "body": "text-base leading-relaxed text-slate-600 dark:text-slate-300",
+        "caption": "text-xs tracking-wider uppercase text-slate-500 font-semibold"
+      },
+      "usage_rules": [
+        "Use Serif (Playfair) ONLY for main Landing Page headings and Name on vCard.",
+        "Use Sans (Inter) for all Dashboard UI, inputs, and body text.",
+        "Use Mono for API keys, IDs, or technical data."
+      ]
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#0F172A",
+          "foreground": "#F8FAFC"
+        },
+        "secondary": {
+          "DEFAULT": "#F1F5F9",
+          "foreground": "#0F172A"
+        },
+        "accent": {
+          "DEFAULT": "#C5A059",
+          "foreground": "#0F172A"
+        },
+        "background": {
+          "light": "#FFFFFF",
+          "dark": "#020617"
+        },
+        "surface": {
+          "light": "#F8FAFC",
+          "dark": "#0F172A"
+        },
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      },
+      "gradients": {
+        "subtle_glow": "radial-gradient(circle at center, rgba(197, 160, 89, 0.15) 0%, transparent 70%)",
+        "card_shimmer": "linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%)"
+      },
+      "rules": [
+        "NO vibrant/neon gradients.",
+        "Use Gold (#C5A059) sparingly for 'Pro' badges or primary call-to-actions on dark backgrounds.",
+        "Dashboard must be high-contrast: Dark text on white/gray surface."
+      ]
+    },
+    "layout": {
+      "spacing": {
+        "container_padding": "p-6 md:p-12 lg:p-24",
+        "section_gap": "gap-12 md:gap-24",
+        "component_gap": "gap-4 md:gap-8"
+      },
+      "grids": {
+        "landing_hero": "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12",
+        "dashboard_main": "grid grid-cols-1 md:grid-cols-4 gap-6",
+        "vcard_mobile": "flex flex-col gap-6 max-w-md mx-auto"
+      },
+      "border_radius": {
+        "default": "rounded-none",
+        "card": "rounded-sm",
+        "button": "rounded-md",
+        "input": "rounded-sm"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm rounded-md px-6 py-2.5 font-medium transition-all",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md px-6 py-2.5 font-medium transition-all",
+        "outline": "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground rounded-md px-6 py-2.5 transition-all"
+      },
+      "cards": {
+        "dashboard": "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md transition-shadow",
+        "vcard": "bg-white dark:bg-slate-900 shadow-xl border-t-4 border-accent overflow-hidden relative"
+      },
+      "inputs": {
+        "default": "flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      },
+      "specific_instructions": [
+        "Use Shadcn UI for all interactive elements.",
+        "Customize Shadcn radius to be smaller (rounded-sm) for a corporate feel.",
+        "Use 'Sonner' for toasts.",
+        "Dashboard cards should be dense and data-rich.",
+        "vCard view must be optimized for mobile screens (max-width: 480px)."
+      ]
+    },
+    "assets": {
+      "images": {
+        "hero_professional": {
+          "url": "https://images.unsplash.com/photo-1576558656222-ba66febe3dec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwaGVhZHNob3R8ZW58MHx8fHwxNzcxMzAwNjkzfDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Professional businessman in grey jacket",
+          "usage": "Landing page hero section or example vCard profile"
+        },
+        "feature_office": {
+          "url": "https://images.unsplash.com/photo-1765126066221-e5935311d0df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwb2ZmaWNlJTIwYXJjaGl0ZWN0dXJlJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzcxMzAwNjk0fDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Modern minimalist office lobby",
+          "usage": "Background for login/signup or 'About Us' section"
+        },
+        "testimonial_1": {
+          "url": "https://images.unsplash.com/photo-1689600944138-da3b150d9cb8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwaGVhZHNob3R8ZW58MHx8fHwxNzcxMzAwNjkzfDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Professional woman testimonial",
+          "usage": "Testimonial section"
+        },
+        "testimonial_2": {
+          "url": "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwaGVhZHNob3R8ZW58MHx8fHwxNzcxMzAwNjkzfDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Professional man testimonial",
+          "usage": "Testimonial section"
+        },
+        "vcard_example_bg": {
+           "url": "https://images.unsplash.com/photo-1666618207644-4de0226a3f85?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBtaW5pbWFsaXN0JTIwb2ZmaWNlJTIwYXJjaGl0ZWN0dXJlJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzcxMzAwNjk0fDA&ixlib=rb-4.1.0&q=85",
+           "alt": "Clean office desk",
+           "usage": "Background for vCard preview"
+        }
+      },
+      "icons": {
+        "library": "lucide-react",
+        "style": "Stroke width 1.5px, size 20px for UI, 24px for navigation"
+      }
+    },
+    "libraries": {
+      "qr_code": "qrcode.react",
+      "charts": "recharts",
+      "animations": "framer-motion",
+      "icons": "lucide-react",
+      "toast": "sonner"
+    },
+    "universal_guidelines": [
+      "No generic gradients. Use solid colors or subtle textures.",
+      "Layouts must be responsive and mobile-first.",
+      "Dark mode is 'Business Class' - deep blues and blacks, not pure black.",
+      "All interactive elements must have `data-testid` attributes.",
+      "Use 'qrcode.react' for generating QR codes with error correction level 'M' or 'H'.",
+      "Ensure vCard data is formatted correctly (VCARD format 3.0 or 4.0) for maximum compatibility.",
+      "For the vCard: It must be downloadable as a .vcf file AND scannable via QR."
+    ]
+  },
+  "implementation_steps": [
+    "1. Setup Tailwind theme with new corporate colors and fonts.",
+    "2. Install dependencies: qrcode.react, recharts, framer-motion, lucide-react, sonner.",
+    "3. Create Layout components: DashboardLayout (Sidebar + Header), AuthLayout (Split screen), PublicLayout (Footer + Nav).",
+    "4. Develop Core Components: VCardPreview (Mobile view), QRCodeGenerator (Canvas/SVG), PricingCard.",
+    "5. Build Pages: Landing, Login/Register, Dashboard (Home, Cards, Analytics, Settings).",
+    "6. Implement vCard logic: Generate vCard string -> Embed in QR -> Download function."
+  ]
+}
