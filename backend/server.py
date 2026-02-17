@@ -44,6 +44,15 @@ logger = logging.getLogger(__name__)
 
 # ==================== MODELS ====================
 
+# Settings Model for PayPal configuration
+class PayPalSettingsUpdate(BaseModel):
+    paypal_client_id: Optional[str] = None
+    paypal_mode: Optional[str] = "sandbox"  # sandbox or live
+
+class SettingsResponse(BaseModel):
+    paypal_client_id: Optional[str] = None
+    paypal_mode: str = "sandbox"
+
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
