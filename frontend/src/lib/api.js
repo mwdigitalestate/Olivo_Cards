@@ -70,6 +70,7 @@ export const adminAPI = {
   getUsers: () => api.get('/admin/users'),
   getStats: () => api.get('/admin/stats'),
   updateUserRole: (userId, role) => api.put(`/admin/users/${userId}/role?role=${role}`),
+  deleteUser: (userId) => api.delete(`/admin/users/${userId}`),
   getSubscriptions: () => api.get('/admin/subscriptions'),
   getSettings: () => api.get('/admin/settings'),
   updatePayPalSettings: (data) => api.put('/admin/settings/paypal', data),
