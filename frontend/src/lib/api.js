@@ -63,6 +63,11 @@ export const subscriptionsAPI = {
   getCurrent: () => api.get('/subscriptions/current'),
   create: (data) => api.post('/subscriptions', data),
   cancel: () => api.post('/subscriptions/cancel'),
+  cancelRecurring: () => api.post('/subscriptions/cancel-recurring'),
+  // PayPal recurring subscriptions
+  createPayPalSubscription: (data) => api.post('/subscriptions/paypal/create', data),
+  activatePayPalSubscription: (paypal_subscription_id, plan_id) => 
+    api.post(`/subscriptions/paypal/activate?paypal_subscription_id=${paypal_subscription_id}&plan_id=${plan_id}`),
 };
 
 // Admin API
@@ -78,6 +83,18 @@ export const adminAPI = {
   updateEmailSettings: (data) => api.put('/admin/settings/email', data),
   testEmail: () => api.post('/admin/test-email'),
   checkExpiringSubscriptions: () => api.post('/admin/check-expiring-subscriptions'),
+  // PayPal plan sync
+  syncPlanWithPayPal: (planId) => api.post('/admin/paypal/sync-plan', { plan_id: planId }),
+  syncAllPlansWithPayPal: () => api.post('/admin/paypal/sync-all-plans'),
+};
+
+// Plans API
+export const plansAPI = {
+  getAll: () => api.get('/plans'),
+  getOne: (id) => api.get(`/plans/${id}`),
+  create: (data) => api.post('/plans', data),
+  update: (id, data) => api.put(`/plans/${id}`, data),
+  delete: (id) => api.delete(`/plans/${id}`),
 };
 
 // Public Settings API
