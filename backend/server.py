@@ -702,6 +702,31 @@ async def update_user_role(user_id: str, role: str, admin: dict = Depends(get_ad
     
     return {"message": f"User role updated to {role}"}
 
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, admin: dict = Depends(get_admin_user)):
+    # Prevent admin from deleting themselves
+    if user_id == admin['id']:
+        raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
+    
+    # Check if user exists
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Delete user's vcards
+    await db.vcards.delete_many({"user_id": user_id})
+    
+    # Delete user's subscriptions
+    await db.subscriptions.delete_many({"user_id": user_id})
+    
+    # Delete user
+    result = await db.users.delete_one({"id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    return {"message": "Usuario eliminado correctamente"}
+
 @api_router.get("/admin/subscriptions")
 async def get_all_subscriptions(admin: dict = Depends(get_admin_user)):
     subscriptions = await db.subscriptions.find({}, {"_id": 0}).to_list(1000)
