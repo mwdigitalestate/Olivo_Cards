@@ -381,7 +381,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 # ==================== VCARD ROUTES ====================
 
 @api_router.post("/vcards", response_model=VCardResponse)
-async def create_vcard(vcard_data: VCardCreate, current_user: dict = Depends(get_current_user)):
+async def create_vcard(vcard_data: VCardCreate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     # Check user's card limit based on subscription
     user_cards = await db.vcards.count_documents({"user_id": current_user['id'], "is_active": True})
     
@@ -413,6 +413,19 @@ async def create_vcard(vcard_data: VCardCreate, current_user: dict = Depends(get
     vcard_dict['updated_at'] = vcard_dict['updated_at'].isoformat()
     
     await db.vcards.insert_one(vcard_dict)
+    
+    # Send new card email in background
+    async def send_new_card_email():
+        email_svc = await get_email_service()
+        if email_svc.is_configured():
+            subject, html = email_svc.get_new_card_template(
+                current_user['full_name'],
+                vcard.full_name,
+                vcard.id
+            )
+            await email_svc.send_email(current_user['email'], subject, html)
+    
+    background_tasks.add_task(send_new_card_email)
     
     return VCardResponse(
         **vcard_data.model_dump(),
