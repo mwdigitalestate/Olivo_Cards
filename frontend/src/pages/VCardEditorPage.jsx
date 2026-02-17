@@ -85,7 +85,7 @@ export const VCardEditorPage = () => {
     return (
       <DashboardLayout>
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900" />
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
         </div>
       </DashboardLayout>
     );
@@ -106,18 +106,19 @@ export const VCardEditorPage = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate('/dashboard')}
+            className="text-[#5E5E5E] hover:bg-[#F5F5F5]"
             data-testid="back-btn"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
             <h1 
-              className="text-2xl md:text-3xl font-bold text-slate-900"
+              className="text-2xl md:text-3xl font-bold text-[#3C3C3C]"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               {isEditing ? 'Editar Tarjeta' : 'Nueva Tarjeta'}
             </h1>
-            <p className="text-slate-500 mt-1">
+            <p className="text-[#808080] mt-1">
               {isEditing 
                 ? 'Actualiza la información de tu tarjeta'
                 : 'Crea una nueva tarjeta digital'
@@ -128,7 +129,7 @@ export const VCardEditorPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form */}
-          <div className="bg-white border border-slate-200 rounded-sm p-6">
+          <div className="bg-white border border-[#C3C3C3] rounded-sm p-6">
             <form onSubmit={handleSubmit}>
               <VCardForm data={formData} onChange={setFormData} />
               
@@ -137,14 +138,14 @@ export const VCardEditorPage = () => {
                   type="button"
                   variant="outline"
                   onClick={() => navigate('/dashboard')}
-                  className="flex-1"
+                  className="flex-1 border-[#A2A2A2]"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
+                  className="flex-1 bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
                   data-testid="save-card-btn"
                 >
                   {saving ? (
@@ -165,7 +166,7 @@ export const VCardEditorPage = () => {
 
           {/* Preview */}
           <div className="lg:sticky lg:top-8">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            <h2 className="text-lg font-semibold text-[#3C3C3C] mb-4">
               Vista previa
             </h2>
             <VCardPreview vcard={previewData} showActions={false} />
