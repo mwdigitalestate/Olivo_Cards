@@ -560,7 +560,7 @@ async def delete_plan(plan_id: str, admin: dict = Depends(get_admin_user)):
 # ==================== SUBSCRIPTION ROUTES ====================
 
 @api_router.post("/subscriptions", response_model=SubscriptionResponse)
-async def create_subscription(sub_data: SubscriptionCreate, current_user: dict = Depends(get_current_user)):
+async def create_subscription(sub_data: SubscriptionCreate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
     # Verify plan exists
     plan = await db.plans.find_one({"id": sub_data.plan_id, "is_active": True}, {"_id": 0})
     if not plan:
@@ -599,6 +599,21 @@ async def create_subscription(sub_data: SubscriptionCreate, current_user: dict =
         {"id": current_user['id']},
         {"$set": {"subscription_id": subscription.id}}
     )
+    
+    # Send subscription email in background
+    async def send_subscription_email():
+        email_svc = await get_email_service()
+        if email_svc.is_configured():
+            end_date_formatted = end_date.strftime("%d/%m/%Y")
+            subject, html = email_svc.get_subscription_template(
+                current_user['full_name'],
+                plan['name'],
+                plan['price'],
+                end_date_formatted
+            )
+            await email_svc.send_email(current_user['email'], subject, html)
+    
+    background_tasks.add_task(send_subscription_email)
     
     return SubscriptionResponse(
         id=subscription.id,
