@@ -288,6 +288,8 @@ export const AdminPlansPage = () => {
   const [loading, setLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [syncingPayPal, setSyncingPayPal] = useState(false);
+  const [syncingPlanId, setSyncingPlanId] = useState(null);
 
   const emptyPlan = {
     name: '',
@@ -362,6 +364,35 @@ export const AdminPlansPage = () => {
     }
   };
 
+  const handleSyncWithPayPal = async (planId) => {
+    setSyncingPlanId(planId);
+    try {
+      await adminAPI.syncPlanWithPayPal(planId);
+      toast.success('Plan sincronizado con PayPal para pagos recurrentes');
+      loadPlans();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al sincronizar con PayPal');
+    } finally {
+      setSyncingPlanId(null);
+    }
+  };
+
+  const handleSyncAllWithPayPal = async () => {
+    setSyncingPayPal(true);
+    try {
+      const response = await adminAPI.syncAllPlansWithPayPal();
+      toast.success(`${response.data.synced} planes sincronizados con PayPal`);
+      if (response.data.errors?.length > 0) {
+        toast.warning(`Errores: ${response.data.errors.join(', ')}`);
+      }
+      loadPlans();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al sincronizar planes con PayPal');
+    } finally {
+      setSyncingPayPal(false);
+    }
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -375,7 +406,7 @@ export const AdminPlansPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6" data-testid="admin-plans-page">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 
               className="text-2xl md:text-3xl font-bold text-[#3C3C3C]"
@@ -387,14 +418,45 @@ export const AdminPlansPage = () => {
               Configura los planes de suscripción
             </p>
           </div>
-          <Button 
-            onClick={() => openDialog()}
-            className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
-            data-testid="new-plan-btn"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Plan
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSyncAllWithPayPal}
+              disabled={syncingPayPal}
+              variant="outline"
+              className="border-[#003087] text-[#003087] hover:bg-[#003087]/10"
+              data-testid="sync-all-paypal-btn"
+            >
+              {syncingPayPal ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#003087] mr-2" />
+                  Sincronizando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .76-.655h6.468c2.937 0 5.107 2.037 5.107 4.794 0 3.76-2.866 6.136-6.472 6.136H8.103l-1.027 7.342zm7.237-17.472H9.126a.19.19 0 0 0-.188.161L7.778 12.1h3.033c2.597 0 4.667-1.75 4.667-4.167 0-1.828-1.257-4.068-3.165-4.068z"/>
+                  </svg>
+                  Sincronizar con PayPal
+                </>
+              )}
+            </Button>
+            <Button 
+              onClick={() => openDialog()}
+              className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
+              data-testid="new-plan-btn"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nuevo Plan
+            </Button>
+          </div>
+        </div>
+
+        {/* PayPal sync info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-sm p-4">
+          <p className="text-sm text-blue-800">
+            <strong>Pagos Recurrentes:</strong> Para habilitar pagos automáticos mensuales/anuales, sincroniza los planes con PayPal usando el botón "Sincronizar con PayPal". 
+            Los planes gratuitos no necesitan sincronización.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
