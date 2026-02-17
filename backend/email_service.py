@@ -130,7 +130,7 @@ class EmailService:
                         <p style="margin: 5px 0; color: #5E5E5E;"><strong>Válido hasta:</strong> {end_date}</p>
                     </div>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://olivocards.com/dashboard" class="btn">Ir a mi Dashboard</a>
+                        <a href="{APP_URL}/dashboard" class="btn">Ir a mi Dashboard</a>
                     </div>
                 </div>
                 <div class="footer">
