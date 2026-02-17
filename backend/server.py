@@ -204,11 +204,13 @@ class Plan(PlanBase):
 class PlanResponse(PlanBase):
     id: str
     is_active: bool
+    paypal_plan_id: Optional[str] = None
 
 # Subscription Models
 class SubscriptionCreate(BaseModel):
     plan_id: str
     paypal_order_id: Optional[str] = None
+    paypal_subscription_id: Optional[str] = None
 
 class Subscription(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -217,6 +219,8 @@ class Subscription(BaseModel):
     plan_id: str
     status: str = "active"  # active, cancelled, expired
     paypal_order_id: Optional[str] = None
+    paypal_subscription_id: Optional[str] = None
+    is_recurring: bool = False
     start_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     end_date: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -228,6 +232,17 @@ class SubscriptionResponse(BaseModel):
     status: str
     start_date: str
     end_date: Optional[str] = None
+    paypal_subscription_id: Optional[str] = None
+    is_recurring: bool = False
+
+# PayPal Subscription Models
+class PayPalSubscriptionCreate(BaseModel):
+    plan_id: str
+    return_url: str
+    cancel_url: str
+
+class SyncPayPalPlanRequest(BaseModel):
+    plan_id: str
 
 # ==================== HELPER FUNCTIONS ====================
 
