@@ -236,6 +236,8 @@ class VCardAPITester:
             "DELETE", 
             f"vcards/{self.created_vcard_id}", 
             200
+        )
+
     def test_admin_login(self):
         """Test admin login"""
         admin_data = {
