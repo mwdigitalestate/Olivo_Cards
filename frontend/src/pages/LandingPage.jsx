@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/7whbj0dj_LOGO%20OLIVO.png";
+
 const features = [
   {
     icon: QrCode,
@@ -59,7 +61,6 @@ export const LandingPage = () => {
   useEffect(() => {
     const loadPlans = async () => {
       try {
-        // First try to seed plans if they don't exist
         await seedPlans();
       } catch (e) {
         // Plans might already exist
@@ -99,20 +100,20 @@ export const LandingPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 text-sm font-medium px-4 py-2 rounded-full mb-6">
-                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+              <span className="inline-flex items-center gap-2 bg-[#E7E723]/20 text-[#818113] text-sm font-medium px-4 py-2 rounded-full mb-6">
+                <span className="w-2 h-2 bg-[#C5C51E] rounded-full animate-pulse" />
                 Tarjetas Digitales Profesionales
               </span>
               
               <h1 
-                className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight leading-none mb-6"
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#3C3C3C] tracking-tight leading-none mb-6"
                 style={{ fontFamily: 'Playfair Display, serif' }}
               >
                 Tu tarjeta de presentación,{' '}
-                <span className="text-amber-600">sin papel</span>
+                <span className="text-[#C5C51E]">sin papel</span>
               </h1>
               
-              <p className="text-lg text-slate-600 mb-8 max-w-xl">
+              <p className="text-lg text-[#5E5E5E] mb-8 max-w-xl">
                 Crea tarjetas digitales con códigos QR que funcionan sin internet. 
                 Comparte tu información de contacto de manera elegante y profesional.
               </p>
@@ -121,7 +122,7 @@ export const LandingPage = () => {
                 <Button 
                   size="lg"
                   onClick={() => navigate('/register')}
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-8"
+                  className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold px-8"
                   data-testid="cta-start-free"
                 >
                   Comenzar Gratis
@@ -131,6 +132,7 @@ export const LandingPage = () => {
                   size="lg"
                   variant="outline"
                   onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="border-[#A2A2A2] text-[#3C3C3C]"
                   data-testid="cta-view-plans"
                 >
                   Ver Planes
@@ -138,13 +140,13 @@ export const LandingPage = () => {
               </div>
 
               {/* Trust badges */}
-              <div className="mt-10 flex items-center gap-6 text-sm text-slate-500">
+              <div className="mt-10 flex items-center gap-6 text-sm text-[#808080]">
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-amber-500" />
+                  <Check className="w-4 h-4 text-[#C5C51E]" />
                   Sin tarjeta de crédito
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-amber-500" />
+                  <Check className="w-4 h-4 text-[#C5C51E]" />
                   Configuración en 2 minutos
                 </div>
               </div>
@@ -159,7 +161,7 @@ export const LandingPage = () => {
             >
               <div className="relative">
                 {/* Card preview mockup */}
-                <div className="bg-slate-900 rounded-sm shadow-2xl p-6 max-w-sm mx-auto">
+                <div className="bg-[#3C3C3C] rounded-sm shadow-2xl p-6 max-w-sm mx-auto">
                   <div className="text-center mb-6">
                     <img 
                       src="https://images.unsplash.com/photo-1576558656222-ba66febe3dec?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwaGVhZHNob3R8ZW58MHx8fHwxNzcxMzAwNjkzfDA&ixlib=rb-4.1.0&q=85"
@@ -169,20 +171,20 @@ export const LandingPage = () => {
                     <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
                       María García
                     </h3>
-                    <p className="text-slate-400">Directora de Marketing</p>
-                    <p className="text-amber-500 font-medium">TechCorp Inc.</p>
+                    <p className="text-[#A2A2A2]">Directora de Marketing</p>
+                    <p className="text-[#C5C51E] font-medium">TechCorp Inc.</p>
                   </div>
                   
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center gap-3 text-slate-300">
-                      <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center">
-                        <span className="text-amber-500">📱</span>
+                    <div className="flex items-center gap-3 text-[#C3C3C3]">
+                      <div className="w-8 h-8 bg-[#5E5E5E] rounded-full flex items-center justify-center">
+                        <span className="text-[#C5C51E]">📱</span>
                       </div>
                       +52 55 1234 5678
                     </div>
-                    <div className="flex items-center gap-3 text-slate-300">
-                      <div className="w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center">
-                        <span className="text-amber-500">✉️</span>
+                    <div className="flex items-center gap-3 text-[#C3C3C3]">
+                      <div className="w-8 h-8 bg-[#5E5E5E] rounded-full flex items-center justify-center">
+                        <span className="text-[#C5C51E]">✉️</span>
                       </div>
                       maria@techcorp.com
                     </div>
@@ -190,16 +192,16 @@ export const LandingPage = () => {
 
                   {/* QR placeholder */}
                   <div className="mt-6 bg-white p-4 rounded-sm mx-auto w-fit">
-                    <div className="w-24 h-24 bg-slate-100 grid grid-cols-4 gap-0.5 p-1">
+                    <div className="w-24 h-24 bg-[#F5F5F5] grid grid-cols-4 gap-0.5 p-1">
                       {[...Array(16)].map((_, i) => (
-                        <div key={i} className={`${Math.random() > 0.5 ? 'bg-slate-900' : 'bg-white'}`} />
+                        <div key={i} className={`${Math.random() > 0.5 ? 'bg-[#3C3C3C]' : 'bg-white'}`} />
                       ))}
                     </div>
                   </div>
                 </div>
 
                 {/* Decorative elements */}
-                <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-amber-100/50 to-transparent rounded-full blur-3xl" />
+                <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-[#E7E723]/20 to-transparent rounded-full blur-3xl" />
               </div>
             </motion.div>
           </div>
@@ -207,16 +209,16 @@ export const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-slate-50" data-testid="features-section">
+      <section id="features" className="py-24 bg-[#F5F5F5]" data-testid="features-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 
-              className="text-3xl md:text-4xl font-bold text-slate-900 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#3C3C3C] mb-4"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               Todo lo que necesitas
             </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-[#5E5E5E] max-w-2xl mx-auto">
               Herramientas profesionales para crear y gestionar tus tarjetas digitales
             </p>
           </div>
@@ -225,17 +227,17 @@ export const LandingPage = () => {
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
-                className="bg-white p-6 rounded-sm border border-slate-200 hover:shadow-lg transition-shadow"
+                className="bg-white p-6 rounded-sm border border-[#C3C3C3] hover:shadow-lg transition-shadow"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <div className="w-12 h-12 bg-amber-100 rounded-sm flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-amber-600" />
+                <div className="w-12 h-12 bg-[#E7E723]/20 rounded-sm flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-[#818113]" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">{feature.title}</h3>
-                <p className="text-slate-600 text-sm">{feature.description}</p>
+                <h3 className="text-lg font-semibold text-[#3C3C3C] mb-2">{feature.title}</h3>
+                <p className="text-[#5E5E5E] text-sm">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -247,19 +249,19 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 
-              className="text-3xl md:text-4xl font-bold text-slate-900 mb-4"
+              className="text-3xl md:text-4xl font-bold text-[#3C3C3C] mb-4"
               style={{ fontFamily: 'Playfair Display, serif' }}
             >
               Planes para cada necesidad
             </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-[#5E5E5E] max-w-2xl mx-auto">
               Comienza gratis y escala según crezcan tus necesidades
             </p>
           </div>
 
           {loadingPlans ? (
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -283,7 +285,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-slate-900" data-testid="testimonials-section">
+      <section id="testimonials" className="py-24 bg-[#3C3C3C]" data-testid="testimonials-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 
@@ -300,7 +302,7 @@ export const LandingPage = () => {
                 name: 'Carlos Mendoza',
                 role: 'CEO, StartupMX',
                 image: 'https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwaGVhZHNob3R8ZW58MHx8fHwxNzcxMzAwNjkzfDA&ixlib=rb-4.1.0&q=85',
-                quote: 'Dejé de imprimir tarjetas hace 6 meses. vCard Pro cambió la forma en que hago networking.'
+                quote: 'Dejé de imprimir tarjetas hace 6 meses. Olivo Cards cambió la forma en que hago networking.'
               },
               {
                 name: 'Ana Rodríguez',
@@ -317,7 +319,7 @@ export const LandingPage = () => {
             ].map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
-                className="bg-slate-800 p-6 rounded-sm"
+                className="bg-[#5E5E5E] p-6 rounded-sm"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -331,10 +333,10 @@ export const LandingPage = () => {
                   />
                   <div>
                     <p className="font-semibold text-white">{testimonial.name}</p>
-                    <p className="text-sm text-slate-400">{testimonial.role}</p>
+                    <p className="text-sm text-[#A2A2A2]">{testimonial.role}</p>
                   </div>
                 </div>
-                <p className="text-slate-300 italic">"{testimonial.quote}"</p>
+                <p className="text-[#C3C3C3] italic">"{testimonial.quote}"</p>
               </motion.div>
             ))}
           </div>
@@ -342,21 +344,21 @@ export const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-amber-50" data-testid="cta-section">
+      <section className="py-24 bg-[#E7E723]/10" data-testid="cta-section">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 
-            className="text-3xl md:text-4xl font-bold text-slate-900 mb-4"
+            className="text-3xl md:text-4xl font-bold text-[#3C3C3C] mb-4"
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
-            Listo para modernizar tu networking?
+            ¿Listo para modernizar tu networking?
           </h2>
-          <p className="text-slate-600 mb-8">
+          <p className="text-[#5E5E5E] mb-8">
             Crea tu primera tarjeta digital en menos de 2 minutos. Es gratis.
           </p>
           <Button 
             size="lg"
             onClick={() => navigate('/register')}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-12"
+            className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold px-12"
             data-testid="cta-final"
           >
             Comenzar Ahora
