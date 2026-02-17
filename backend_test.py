@@ -344,7 +344,7 @@ class VCardAPITester:
         )
 
 def main():
-    print("🚀 Starting vCard API Testing...")
+    print("🚀 Starting Olivo Cards API Testing...")
     print("=" * 50)
     
     tester = VCardAPITester()
@@ -357,9 +357,22 @@ def main():
     tester.test_seed_plans()
     tester.test_get_plans()
     
-    print("\n👤 AUTHENTICATION TESTS")
+    print("\n⚙️ SETTINGS TESTS (Public)")
+    tester.test_paypal_client_id_endpoint()
+    
+    print("\n👤 USER AUTHENTICATION TESTS")
     tester.test_user_registration()
     tester.test_get_me()
+    
+    print("\n🔐 ADMIN AUTHENTICATION TESTS")
+    tester.test_admin_login()
+    
+    print("\n👑 ADMIN FUNCTIONALITY TESTS")
+    tester.test_admin_stats()
+    tester.test_admin_settings_get()
+    tester.test_admin_settings_update()
+    tester.test_admin_settings_get()  # Test again to verify persistence
+    tester.test_paypal_client_id_endpoint()  # Test public endpoint after admin update
     
     print("\n📇 VCARD CRUD TESTS")
     tester.test_create_vcard()
