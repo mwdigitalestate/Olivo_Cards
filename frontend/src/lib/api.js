@@ -50,6 +50,19 @@ export const vcardsAPI = {
   getPublic: (id) => api.get(`/vcard/${id}/public`),
 };
 
+// Upload API
+export const uploadAPI = {
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 // Plans API
 export const plansAPI = {
   getAll: () => api.get('/plans'),
