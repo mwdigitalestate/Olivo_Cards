@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
+import { Button } from './ui/button';
+import { uploadAPI } from '../lib/api';
+import { toast } from 'sonner';
 import { 
   User, 
   Phone, 
@@ -10,10 +13,15 @@ import {
   Briefcase, 
   MapPin, 
   Globe,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 export const VCardForm = ({ data, onChange }) => {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
   const handleChange = (field, value) => {
     if (field.startsWith('social_links.')) {
       const socialField = field.split('.')[1];
@@ -26,6 +34,35 @@ export const VCardForm = ({ data, onChange }) => {
       });
     } else {
       onChange({ ...data, [field]: value });
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Tipo de archivo no permitido. Usa JPG, PNG, GIF o WebP.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('El archivo es demasiado grande. Máximo 5MB.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const response = await uploadAPI.uploadImage(file);
+      handleChange('photo_url', response.data.url);
+      toast.success('Imagen subida correctamente');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al subir la imagen');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -51,17 +88,58 @@ export const VCardForm = ({ data, onChange }) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="photo_url">URL de Foto</Label>
-            <div className="relative">
-              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                id="photo_url"
-                value={data.photo_url || ''}
-                onChange={(e) => handleChange('photo_url', e.target.value)}
-                placeholder="https://..."
-                className="pl-10"
-                data-testid="input-photo-url"
-              />
+            <Label htmlFor="photo_url">Foto de Perfil</Label>
+            <div className="space-y-2">
+              <div className="relative">
+                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="photo_url"
+                  value={data.photo_url || ''}
+                  onChange={(e) => handleChange('photo_url', e.target.value)}
+                  placeholder="https://... o sube una imagen"
+                  className="pl-10"
+                  data-testid="input-photo-url"
+                />
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex-1"
+                  data-testid="upload-image-btn"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Subiendo...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Subir imagen
+                    </>
+                  )}
+                </Button>
+              </div>
+              {data.photo_url && (
+                <div className="mt-2">
+                  <img 
+                    src={data.photo_url} 
+                    alt="Preview" 
+                    className="w-20 h-20 object-cover rounded-full border border-slate-200"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
