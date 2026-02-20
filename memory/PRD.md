@@ -15,18 +15,22 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - QR code generation for each card
 - Public card view accessible without login
 - vCard format export for contact saving
+- **Image upload from device** for profile photos
 
 ### 3. Subscription Plans
 - **Básico (Free):** 1 card, basic features
-- **Profesional ($9.99/month):** 5 cards, full features
+- **Profesional ($9.99/month):** 5 cards, full features, **15 días gratis**
 - **Empresarial ($29.99/month):** 25 cards, API access, team management
+- **Trial Period:** Configurable free trial days per plan
 
 ### 4. PayPal Recurring Payments ✅ IMPLEMENTED
 - Automatic monthly/yearly subscription billing
 - PayPal Subscriptions API integration
 - Admin can sync plans with PayPal
-- Users subscribe through PayPal approval flow
-- Automatic payment collection by PayPal
+- **Trial periods with PayPal native billing cycles**
+- Users must link PayPal to activate trial
+- Automatic payment after trial ends
+- Webhook handling for payment events
 
 ### 5. Email Notifications (Pending Configuration)
 - Welcome email on registration
@@ -37,7 +41,7 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 
 ### 6. Admin Dashboard
 - User management (view, edit role, delete)
-- Plan management (CRUD)
+- Plan management (CRUD + trial_days configuration)
 - PayPal configuration
 - Email SMTP configuration
 - Statistics dashboard
@@ -49,6 +53,7 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - MongoDB (Motor async driver)
 - JWT authentication
 - PayPal Subscriptions API
+- **File uploads (local storage)**
 - aiosmtplib for emails
 
 ### Frontend
@@ -72,11 +77,14 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - `DELETE /api/vcards/{id}` - Delete card
 - `GET /api/vcard/{id}/public` - Public card view
 
+### File Upload
+- `POST /api/upload/image` - Upload profile image (returns URL)
+
 ### Plans
-- `GET /api/plans` - List all plans
+- `GET /api/plans` - List all plans (includes trial_days)
 - `GET /api/plans/{id}` - Get plan details
 - `POST /api/plans` - Create plan (admin)
-- `PUT /api/plans/{id}` - Update plan (admin)
+- `PUT /api/plans/{id}` - Update plan (admin) - auto-resets paypal_plan_id if trial_days changes
 - `DELETE /api/plans/{id}` - Deactivate plan (admin)
 
 ### Subscriptions
@@ -89,7 +97,7 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 ### Admin
 - `GET /api/admin/users` - List all users
 - `DELETE /api/admin/users/{id}` - Delete user
-- `POST /api/admin/paypal/sync-plan` - Sync plan with PayPal
+- `POST /api/admin/paypal/sync-plan` - Sync plan with PayPal (includes trial)
 - `POST /api/admin/paypal/sync-all-plans` - Sync all plans
 - `GET /api/admin/settings` - Get PayPal settings
 - `PUT /api/admin/settings/paypal` - Update PayPal config
@@ -98,32 +106,38 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 ### Webhooks
 - `POST /api/webhooks/paypal` - PayPal webhook handler
 
-## Completed Features (as of Feb 17, 2026)
+## Completed Features (as of Feb 20, 2026)
 
 ### ✅ Core Application
 - Full authentication system
 - vCard CRUD operations
 - QR code generation
 - Public card viewing
+- **Image upload from device**
 
 ### ✅ Admin Dashboard
 - User management with delete functionality
-- Plan management
+- Plan management with **trial_days** configuration
 - PayPal configuration page
 - Email configuration page
 
 ### ✅ PayPal Recurring Payments
 - PayPal Subscriptions API integration
 - Plan synchronization with PayPal
+- **Trial period support (native PayPal TRIAL billing cycles)**
 - Recurring subscription flow
 - Automatic payment renewal
 - Webhook handling for payment events
+- Auto-reset paypal_plan_id when trial_days changes
 
 ### ✅ UI/Branding
 - Olivo Cards branding
 - Custom logo
 - Olive green color scheme
 - Footer with MW Digital Estate link
+- **Trial badges on pricing cards**
+- **"Probar X días gratis" buttons**
+- **Trial checkout notices**
 
 ## Pending Features
 
@@ -143,6 +157,13 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - Mode: `sandbox` (for testing) or `live` (production)
 - Plans must be synced with PayPal before accepting recurring payments
 - Admin Dashboard → Planes → "Sincronizar con PayPal"
+- **When trial_days changes, PayPal plan is automatically reset**
+
+### Image Upload
+- Files stored in `/app/backend/uploads/`
+- Served at `/uploads/{filename}`
+- Max file size: 5MB
+- Allowed types: JPG, PNG, GIF, WebP
 
 ### Email Setup
 - Requires Gmail App Password (16-character code)
@@ -151,16 +172,16 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 
 ## Test Credentials
 - **Admin:** admin@vcardpro.com / admin123
-- **Test User:** testpaypal@test.com / Test123!
+- **Test Users:** testupload@test.com, testtrial@test.com (password: Test123!)
 
 ## Database Collections
 - `users` - User accounts
 - `vcards` - Digital business cards
-- `plans` - Subscription plans
+- `plans` - Subscription plans (includes trial_days, paypal_plan_id)
 - `subscriptions` - User subscriptions
 - `settings` - PayPal and email configuration
 
 ---
 
-*Last Updated: February 17, 2026*
+*Last Updated: February 20, 2026*
 *Developed by MW Digital Estate - https://maldivasweb.com*
