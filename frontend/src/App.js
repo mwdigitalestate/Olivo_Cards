@@ -6,6 +6,7 @@ import { Toaster } from './components/ui/sonner';
 // Pages
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import VCardEditorPage from './pages/VCardEditorPage';
 import PublicVCardPage from './pages/PublicVCardPage';
