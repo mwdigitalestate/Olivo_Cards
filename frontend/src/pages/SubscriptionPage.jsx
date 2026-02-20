@@ -25,16 +25,27 @@ export const SubscriptionPage = () => {
 
   // Handle PayPal return after approval
   const handlePayPalReturn = useCallback(async () => {
-    const subscriptionId = searchParams.get('subscription_id');
+    const paypalReturn = searchParams.get('paypal_return');
     const planId = searchParams.get('plan_id');
     
-    if (subscriptionId && planId) {
+    if (paypalReturn === 'true' && planId) {
+      // Get subscription_id from localStorage
+      const pendingData = localStorage.getItem('pending_paypal_subscription');
+      if (!pendingData) {
+        toast.error('No se encontró información de la suscripción pendiente');
+        navigate('/dashboard/subscription', { replace: true });
+        return;
+      }
+      
+      const { subscription_id: subscriptionId } = JSON.parse(pendingData);
+      
       setActivatingSubscription(true);
       try {
         await subscriptionsAPI.activatePayPalSubscription(subscriptionId, planId);
         toast.success('¡Suscripción activada correctamente! Los pagos se renovarán automáticamente.');
         
-        // Clean URL params
+        // Clean localStorage and URL params
+        localStorage.removeItem('pending_paypal_subscription');
         navigate('/dashboard/subscription', { replace: true });
         
         // Refresh data
@@ -46,6 +57,7 @@ export const SubscriptionPage = () => {
       } catch (error) {
         console.error('Error activating subscription:', error);
         toast.error(error.response?.data?.detail || 'Error al activar la suscripción');
+        localStorage.removeItem('pending_paypal_subscription');
       } finally {
         setActivatingSubscription(false);
       }
