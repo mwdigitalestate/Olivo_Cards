@@ -122,11 +122,16 @@ export const SubscriptionPage = () => {
       const baseUrl = window.location.origin;
       const response = await subscriptionsAPI.createPayPalSubscription({
         plan_id: plan.id,
-        return_url: `${baseUrl}/dashboard/subscription?subscription_id={subscription_id}&plan_id=${plan.id}`,
+        return_url: `${baseUrl}/dashboard/subscription?plan_id=${plan.id}&paypal_return=true`,
         cancel_url: `${baseUrl}/dashboard/subscription?cancelled=true`
       });
 
       if (response.data.approval_url) {
+        // Save subscription_id to localStorage for retrieval after PayPal redirect
+        localStorage.setItem('pending_paypal_subscription', JSON.stringify({
+          subscription_id: response.data.subscription_id,
+          plan_id: plan.id
+        }));
         // Redirect to PayPal for approval
         window.location.href = response.data.approval_url;
       } else {
