@@ -1058,6 +1058,15 @@ async def sync_plan_with_paypal(request: SyncPayPalPlanRequest, admin: dict = De
         "trial_days": trial_days
     }
 
+@api_router.post("/admin/paypal/reset-all-plans")
+async def reset_all_paypal_plans(admin: dict = Depends(get_admin_user)):
+    """Reset all PayPal plan IDs to force re-sync"""
+    result = await db.plans.update_many(
+        {"paypal_plan_id": {"$ne": None}},
+        {"$set": {"paypal_plan_id": None}}
+    )
+    return {"message": f"Se resetearon {result.modified_count} planes. Ahora puedes sincronizarlos con PayPal."}
+
 @api_router.post("/admin/paypal/sync-all-plans")
 async def sync_all_plans_with_paypal(admin: dict = Depends(get_admin_user)):
     """Sync all paid plans with PayPal"""
