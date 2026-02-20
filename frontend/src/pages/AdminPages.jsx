@@ -621,6 +621,36 @@ export const AdminPlansPage = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[#3C3C3C]">Días de prueba gratis</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={formData.trial_days || 0}
+                    onChange={(e) => setFormData({ ...formData, trial_days: parseInt(e.target.value) || 0 })}
+                    placeholder="0 = sin prueba"
+                    className="border-[#C3C3C3]"
+                    data-testid="plan-trial-days-input"
+                  />
+                  <p className="text-xs text-[#808080]">
+                    El usuario debe vincular PayPal para activar el periodo de prueba
+                  </p>
+                </div>
+                <div className="space-y-2 flex items-center pt-8">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_popular || false}
+                      onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
+                      className="w-4 h-4 accent-[#C5C51E]"
+                    />
+                    <span className="text-[#3C3C3C]">Marcar como popular</span>
+                  </label>
+                </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label className="text-[#3C3C3C]">Características (una por línea)</Label>
                 <Textarea
