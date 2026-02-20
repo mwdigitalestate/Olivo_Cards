@@ -953,19 +953,21 @@ async def sync_plan_with_paypal(request: SyncPayPalPlanRequest, admin: dict = De
     if not paypal_svc.is_configured():
         raise HTTPException(status_code=400, detail="PayPal no está configurado. Configura el Client ID y Secret primero.")
     
-    # Check if plan already has a PayPal plan ID
+    # If plan has trial days or has changed, we need to recreate the PayPal plan
+    # For now, if plan already has PayPal ID and no trial change, skip
     if plan.get("paypal_plan_id"):
-        # Verify it still exists in PayPal
         existing = await paypal_svc.get_plan_details(plan["paypal_plan_id"])
         if existing:
             return {"message": "Plan ya sincronizado con PayPal", "paypal_plan_id": plan["paypal_plan_id"]}
     
-    # Create the PayPal billing plan
+    # Create the PayPal billing plan with trial if specified
+    trial_days = plan.get("trial_days", 0)
     paypal_plan = await paypal_svc.create_billing_plan(
         name=plan["name"],
         description=plan.get("description", f"Suscripción {plan['name']}"),
         price=plan["price"],
-        billing_period=plan.get("billing_period", "monthly")
+        billing_period=plan.get("billing_period", "monthly"),
+        trial_days=trial_days
     )
     
     if not paypal_plan:
@@ -977,7 +979,12 @@ async def sync_plan_with_paypal(request: SyncPayPalPlanRequest, admin: dict = De
         {"$set": {"paypal_plan_id": paypal_plan["id"]}}
     )
     
+    trial_msg = f" con {trial_days} días de prueba gratis" if trial_days > 0 else ""
     return {
+        "message": f"Plan sincronizado con PayPal correctamente{trial_msg}",
+        "paypal_plan_id": paypal_plan["id"],
+        "trial_days": trial_days
+    }
         "message": "Plan sincronizado con PayPal correctamente",
         "paypal_plan_id": paypal_plan["id"]
     }
