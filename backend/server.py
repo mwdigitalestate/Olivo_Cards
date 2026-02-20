@@ -527,6 +527,46 @@ async def delete_vcard(vcard_id: str, current_user: dict = Depends(get_current_u
     
     return {"message": "VCard deleted successfully"}
 
+# ==================== FILE UPLOAD ====================
+
+@api_router.post("/upload/image")
+async def upload_image(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload an image file and return its URL"""
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400, 
+            detail="Tipo de archivo no permitido. Usa JPG, PNG, GIF o WebP."
+        )
+    
+    # Validate file size (max 5MB)
+    file_size = 0
+    content = await file.read()
+    file_size = len(content)
+    if file_size > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=400, 
+            detail="El archivo es demasiado grande. Máximo 5MB."
+        )
+    
+    # Generate unique filename
+    ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{uuid.uuid4()}.{ext}"
+    file_path = UPLOADS_DIR / filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Return URL
+    backend_url = os.environ.get('APP_URL', os.environ.get('REACT_APP_BACKEND_URL', ''))
+    image_url = f"{backend_url}/uploads/{filename}"
+    
+    logger.info(f"Image uploaded: {filename} by user {current_user['id']}")
+    
+    return {"url": image_url, "filename": filename}
+
 # Public VCard endpoint (no auth required)
 @api_router.get("/vcard/{vcard_id}/public")
 async def get_public_vcard(vcard_id: str):
