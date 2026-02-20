@@ -38,6 +38,8 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
+  requestPasswordReset: (email) => api.post('/auth/request-password-reset', { email }),
+  resetPassword: (email, new_password) => api.post('/auth/reset-password', { email, new_password }),
 };
 
 // VCards API
