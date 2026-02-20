@@ -417,6 +417,60 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         subscription_id=current_user.get('subscription_id')
     )
 
+# ==================== PASSWORD RESET ====================
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetConfirm(BaseModel):
+    email: EmailStr
+    new_password: str
+
+@api_router.post("/auth/request-password-reset")
+async def request_password_reset(data: PasswordResetRequest, background_tasks: BackgroundTasks):
+    """Request password reset - always returns success for security"""
+    user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    
+    # Always return success to not reveal if email exists
+    if user:
+        # In a production app, you would send an email with a reset token
+        # For simplicity, we're allowing direct reset
+        async def send_reset_email():
+            email_svc = await get_email_service()
+            if email_svc.is_configured():
+                # Simple notification email
+                html = f"""
+                <h2>Solicitud de cambio de contraseña</h2>
+                <p>Se ha solicitado un cambio de contraseña para tu cuenta en Olivo Cards.</p>
+                <p>Si no fuiste tú, puedes ignorar este mensaje.</p>
+                """
+                await email_svc.send_email(data.email, "Cambio de contraseña - Olivo Cards", html)
+        
+        background_tasks.add_task(send_reset_email)
+    
+    return {"message": "Si el email existe, recibirás instrucciones"}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: PasswordResetConfirm):
+    """Reset user password - simplified version without token for demo"""
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 6 caracteres")
+    
+    user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Hash new password
+    new_password_hash = hash_password(data.new_password)
+    
+    # Update password
+    await db.users.update_one(
+        {"email": data.email},
+        {"$set": {"password_hash": new_password_hash}}
+    )
+    
+    return {"message": "Contraseña actualizada correctamente"}
+
 # ==================== VCARD ROUTES ====================
 
 @api_router.post("/vcards", response_model=VCardResponse)
