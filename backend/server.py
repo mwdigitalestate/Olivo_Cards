@@ -619,6 +619,13 @@ async def update_plan(plan_id: str, plan_data: PlanUpdate, admin: dict = Depends
     
     update_data = {k: v for k, v in plan_data.model_dump().items() if v is not None}
     
+    # If trial_days changed and plan has PayPal ID, reset it so it needs to be re-synced
+    if 'trial_days' in update_data and plan.get('paypal_plan_id'):
+        old_trial = plan.get('trial_days', 0)
+        new_trial = update_data.get('trial_days', 0)
+        if old_trial != new_trial:
+            update_data['paypal_plan_id'] = None
+    
     await db.plans.update_one({"id": plan_id}, {"$set": update_data})
     
     updated = await db.plans.find_one({"id": plan_id}, {"_id": 0})
