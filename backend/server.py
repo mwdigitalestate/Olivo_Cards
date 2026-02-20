@@ -985,9 +985,6 @@ async def sync_plan_with_paypal(request: SyncPayPalPlanRequest, admin: dict = De
         "paypal_plan_id": paypal_plan["id"],
         "trial_days": trial_days
     }
-        "message": "Plan sincronizado con PayPal correctamente",
-        "paypal_plan_id": paypal_plan["id"]
-    }
 
 @api_router.post("/admin/paypal/sync-all-plans")
 async def sync_all_plans_with_paypal(admin: dict = Depends(get_admin_user)):
@@ -1010,11 +1007,13 @@ async def sync_all_plans_with_paypal(admin: dict = Depends(get_admin_user)):
             continue
         
         try:
+            trial_days = plan.get("trial_days", 0)
             paypal_plan = await paypal_svc.create_billing_plan(
                 name=plan["name"],
                 description=plan.get("description", f"Suscripción {plan['name']}"),
                 price=plan["price"],
-                billing_period=plan.get("billing_period", "monthly")
+                billing_period=plan.get("billing_period", "monthly"),
+                trial_days=trial_days
             )
             
             if paypal_plan:
