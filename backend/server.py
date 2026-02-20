@@ -180,6 +180,7 @@ class PlanBase(BaseModel):
     max_cards: int
     features: List[str]
     is_popular: bool = False
+    trial_days: int = 0  # 0 means no trial, e.g., 15 for 15-day trial
 
 class PlanCreate(PlanBase):
     pass
@@ -194,6 +195,7 @@ class PlanUpdate(BaseModel):
     features: Optional[List[str]] = None
     is_popular: Optional[bool] = None
     is_active: Optional[bool] = None
+    trial_days: Optional[int] = None
 
 class Plan(PlanBase):
     model_config = ConfigDict(extra="ignore")
@@ -205,6 +207,7 @@ class PlanResponse(PlanBase):
     id: str
     is_active: bool
     paypal_plan_id: Optional[str] = None
+    trial_days: int = 0
 
 # Subscription Models
 class SubscriptionCreate(BaseModel):
