@@ -158,6 +158,17 @@ export const AuthPage = ({ mode = 'login' }) => {
                   data-testid="input-password"
                 />
               </div>
+              {isLogin && (
+                <div className="text-right">
+                  <Link 
+                    to="/reset-password"
+                    className="text-sm text-[#818113] hover:underline"
+                    data-testid="forgot-password-link"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
+              )}
             </div>
 
             <Button 
