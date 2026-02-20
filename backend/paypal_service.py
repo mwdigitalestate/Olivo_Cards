@@ -92,9 +92,10 @@ class PayPalService:
         description: str,
         price: float,
         billing_period: str = "monthly",
+        trial_days: int = 0,
         product_id: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
-        """Create a PayPal billing plan for recurring payments"""
+        """Create a PayPal billing plan for recurring payments with optional trial"""
         token = await self.get_access_token()
         if not token:
             return None
@@ -109,6 +110,46 @@ class PayPalService:
         # Map billing period
         interval_unit = "MONTH" if billing_period == "monthly" else "YEAR"
         
+        # Build billing cycles
+        billing_cycles = []
+        sequence = 1
+        
+        # Add trial period if specified
+        if trial_days > 0:
+            billing_cycles.append({
+                "frequency": {
+                    "interval_unit": "DAY",
+                    "interval_count": trial_days
+                },
+                "tenure_type": "TRIAL",
+                "sequence": sequence,
+                "total_cycles": 1,
+                "pricing_scheme": {
+                    "fixed_price": {
+                        "value": "0",
+                        "currency_code": "USD"
+                    }
+                }
+            })
+            sequence += 1
+        
+        # Add regular billing cycle
+        billing_cycles.append({
+            "frequency": {
+                "interval_unit": interval_unit,
+                "interval_count": 1
+            },
+            "tenure_type": "REGULAR",
+            "sequence": sequence,
+            "total_cycles": 0,  # 0 = infinite
+            "pricing_scheme": {
+                "fixed_price": {
+                    "value": str(price),
+                    "currency_code": "USD"
+                }
+            }
+        })
+        
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.base_url}/v1/billing/plans",
@@ -121,23 +162,7 @@ class PayPalService:
                     "name": f"Olivo Cards - {name}",
                     "description": description,
                     "status": "ACTIVE",
-                    "billing_cycles": [
-                        {
-                            "frequency": {
-                                "interval_unit": interval_unit,
-                                "interval_count": 1
-                            },
-                            "tenure_type": "REGULAR",
-                            "sequence": 1,
-                            "total_cycles": 0,  # 0 = infinite
-                            "pricing_scheme": {
-                                "fixed_price": {
-                                    "value": str(price),
-                                    "currency_code": "USD"
-                                }
-                            }
-                        }
-                    ],
+                    "billing_cycles": billing_cycles,
                     "payment_preferences": {
                         "auto_bill_outstanding": True,
                         "setup_fee_failure_action": "CONTINUE",
@@ -147,7 +172,7 @@ class PayPalService:
             ) as response:
                 if response.status in [200, 201]:
                     data = await response.json()
-                    logger.info(f"PayPal plan created: {data.get('id')}")
+                    logger.info(f"PayPal plan created: {data.get('id')} with {trial_days} days trial")
                     return data
                 else:
                     error = await response.text()
