@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from './ui/button';
-import { Check } from 'lucide-react';
+import { Check, Gift } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const PricingCard = ({ 
@@ -12,6 +12,7 @@ export const PricingCard = ({
 }) => {
   const isPopular = plan.is_popular;
   const isFree = plan.price === 0;
+  const hasTrial = plan.trial_days > 0;
 
   return (
     <div 
@@ -42,7 +43,7 @@ export const PricingCard = ({
       <p className="text-[#808080] text-sm mb-4">{plan.description}</p>
 
       {/* Price */}
-      <div className="mb-6">
+      <div className="mb-2">
         <span className="text-4xl font-bold text-[#3C3C3C]">
           {isFree ? 'Gratis' : `$${plan.price}`}
         </span>
@@ -52,6 +53,18 @@ export const PricingCard = ({
           </span>
         )}
       </div>
+
+      {/* Trial badge */}
+      {hasTrial && (
+        <div className="mb-4">
+          <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
+            <Gift className="w-3 h-3" />
+            {plan.trial_days} días gratis
+          </span>
+        </div>
+      )}
+      
+      {!hasTrial && <div className="mb-4" />}
 
       {/* Features */}
       <ul className="space-y-3 mb-6 flex-grow">
@@ -76,7 +89,16 @@ export const PricingCard = ({
         variant={isPopular ? "default" : "outline"}
         data-testid={`select-plan-${plan.name.toLowerCase()}`}
       >
-        {loading ? 'Procesando...' : isCurrentPlan ? 'Plan Actual' : isFree ? 'Comenzar Gratis' : 'Seleccionar Plan'}
+        {loading 
+          ? 'Procesando...' 
+          : isCurrentPlan 
+            ? 'Plan Actual' 
+            : isFree 
+              ? 'Comenzar Gratis' 
+              : hasTrial 
+                ? `Probar ${plan.trial_days} días gratis`
+                : 'Seleccionar Plan'
+        }
       </Button>
     </div>
   );
