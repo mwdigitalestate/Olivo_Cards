@@ -299,7 +299,8 @@ export const AdminPlansPage = () => {
     billing_period: 'monthly',
     max_cards: 1,
     features: [],
-    is_popular: false
+    is_popular: false,
+    trial_days: 0
   };
 
   const [formData, setFormData] = useState(emptyPlan);
