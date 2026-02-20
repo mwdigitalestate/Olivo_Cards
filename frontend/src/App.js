@@ -79,6 +79,14 @@ function AppRoutes() {
           </PublicRoute>
         } 
       />
+      <Route 
+        path="/reset-password" 
+        element={
+          <PublicRoute>
+            <ResetPasswordPage />
+          </PublicRoute>
+        } 
+      />
 
       {/* Protected User Routes */}
       <Route 
