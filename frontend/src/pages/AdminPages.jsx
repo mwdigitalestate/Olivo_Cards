@@ -648,7 +648,6 @@ export const AdminPlansPage = () => {
                     <span className="text-[#3C3C3C]">Marcar como popular</span>
                   </label>
                 </div>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -661,14 +660,6 @@ export const AdminPlansPage = () => {
                   className="border-[#C3C3C3]"
                   data-testid="plan-features-input"
                 />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={formData.is_popular}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_popular: checked })}
-                />
-                <Label className="text-[#3C3C3C]">Marcar como popular</Label>
               </div>
 
               <div className="flex gap-2 pt-4">
