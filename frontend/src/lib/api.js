@@ -102,6 +102,7 @@ export const adminAPI = {
   // PayPal plan sync
   syncPlanWithPayPal: (planId) => api.post('/admin/paypal/sync-plan', { plan_id: planId }),
   syncAllPlansWithPayPal: () => api.post('/admin/paypal/sync-all-plans'),
+  resetAllPayPalPlans: () => api.post('/admin/paypal/reset-all-plans'),
 };
 
 // Public Settings API
