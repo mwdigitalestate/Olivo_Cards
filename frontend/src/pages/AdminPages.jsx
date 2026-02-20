@@ -496,6 +496,11 @@ export const AdminPlansPage = () => {
                 {plan.price === 0 ? 'Gratis' : `$${plan.price}`}
                 {plan.price > 0 && <span className="text-sm font-normal text-[#808080]">/{plan.billing_period === 'monthly' ? 'mes' : 'año'}</span>}
               </p>
+              {plan.trial_days > 0 && (
+                <p className="text-sm text-[#818113] mt-1 font-medium">
+                  🎁 {plan.trial_days} días de prueba gratis
+                </p>
+              )}
               <p className="text-sm text-[#5E5E5E] mt-2">
                 Máximo {plan.max_cards} tarjeta{plan.max_cards !== 1 ? 's' : ''}
               </p>
