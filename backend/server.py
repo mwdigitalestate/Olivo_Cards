@@ -24,8 +24,17 @@ load_dotenv(ROOT_DIR / '.env')
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
-# App URL for generating links
-APP_URL = os.environ.get('APP_URL', 'https://olivo-cards-preview.preview.emergentagent.com')
+# App URL for generating links - read from .env file directly
+def get_app_url():
+    env_path = ROOT_DIR / '.env'
+    if env_path.exists():
+        with open(env_path, 'r') as f:
+            for line in f:
+                if line.startswith('APP_URL='):
+                    return line.split('=', 1)[1].strip().strip('"').strip("'")
+    return 'https://olivo-cards-preview.preview.emergentagent.com'
+
+APP_URL = get_app_url()
 
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-super-secret-key-change-in-production')
