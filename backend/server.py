@@ -559,9 +559,9 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
     with open(file_path, "wb") as f:
         f.write(content)
     
-    # Return URL
-    backend_url = os.environ.get('APP_URL', os.environ.get('REACT_APP_BACKEND_URL', ''))
-    image_url = f"{backend_url}/uploads/{filename}"
+    # Return URL - use APP_URL from environment
+    app_url = os.environ.get('APP_URL', 'https://olivo-cards-preview.preview.emergentagent.com')
+    image_url = f"{app_url}/uploads/{filename}"
     
     logger.info(f"Image uploaded: {filename} by user {current_user['id']}")
     
