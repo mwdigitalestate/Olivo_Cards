@@ -291,9 +291,25 @@ export const SubscriptionPage = () => {
             <h2 className="text-xl font-semibold text-[#3C3C3C] mb-4">
               Completar Pago - {selectedPlan.name}
             </h2>
-            <p className="text-[#5E5E5E] mb-2">
-              Total: <strong>${selectedPlan.price} USD</strong> / {selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}
-            </p>
+            
+            {/* Trial period notice */}
+            {selectedPlan.trial_days > 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-sm p-4 mb-4">
+                <p className="text-sm text-green-800 flex items-center gap-2">
+                  <span className="text-lg">🎁</span>
+                  <span>
+                    <strong>¡{selectedPlan.trial_days} días de prueba gratis!</strong> No se te cobrará hasta que termine el periodo de prueba.
+                    Después, se cobrará <strong>${selectedPlan.price} USD</strong> / {selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}.
+                  </span>
+                </p>
+              </div>
+            )}
+            
+            {!selectedPlan.trial_days && (
+              <p className="text-[#5E5E5E] mb-2">
+                Total: <strong>${selectedPlan.price} USD</strong> / {selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}
+              </p>
+            )}
             
             {/* Recurring payment notice */}
             {paypalConfig.has_secret && (
@@ -301,8 +317,10 @@ export const SubscriptionPage = () => {
                 <p className="text-sm text-[#5E5E5E] flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-[#818113]" />
                   <span>
-                    <strong className="text-[#3C3C3C]">Pago recurrente:</strong> Se cobrará automáticamente cada {selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}. 
-                    Puedes cancelar en cualquier momento.
+                    <strong className="text-[#3C3C3C]">Pago recurrente:</strong> {selectedPlan.trial_days > 0 
+                      ? `Después de los ${selectedPlan.trial_days} días de prueba, se cobrará automáticamente cada ${selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}.`
+                      : `Se cobrará automáticamente cada ${selectedPlan.billing_period === 'monthly' ? 'mes' : 'año'}.`
+                    } Puedes cancelar en cualquier momento.
                   </span>
                 </p>
               </div>
@@ -328,7 +346,10 @@ export const SubscriptionPage = () => {
                         <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .76-.655h6.468c2.937 0 5.107 2.037 5.107 4.794 0 3.76-2.866 6.136-6.472 6.136H8.103l-1.027 7.342zm7.237-17.472H9.126a.19.19 0 0 0-.188.161L7.778 12.1h3.033c2.597 0 4.667-1.75 4.667-4.167 0-1.828-1.257-4.068-3.165-4.068z"/>
                         </svg>
-                        Suscribirse con PayPal
+                        {selectedPlan.trial_days > 0 
+                          ? `Iniciar prueba gratis de ${selectedPlan.trial_days} días`
+                          : 'Suscribirse con PayPal'
+                        }
                       </>
                     )}
                   </Button>
