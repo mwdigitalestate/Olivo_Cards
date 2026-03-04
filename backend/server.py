@@ -487,11 +487,10 @@ async def reset_password(data: PasswordResetConfirm):
 
 @api_router.post("/vcards", response_model=VCardResponse)
 async def create_vcard(vcard_data: VCardCreate, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_user)):
-    # Check user's card limit based on subscription
-    user_cards = await db.vcards.count_documents({"user_id": current_user['id'], "is_active": True})
+    # Check if user has an active subscription
+    subscription = None
+    max_cards = 0  # No cards allowed without subscription
     
-    # Get user's plan limit
-    max_cards = 1  # Free tier default
     if current_user.get('subscription_id'):
         subscription = await db.subscriptions.find_one(
             {"id": current_user['subscription_id'], "status": "active"},
@@ -502,10 +501,20 @@ async def create_vcard(vcard_data: VCardCreate, background_tasks: BackgroundTask
             if plan:
                 max_cards = plan.get('max_cards', 1)
     
+    # If no active subscription, block card creation
+    if not subscription:
+        raise HTTPException(
+            status_code=403, 
+            detail="Necesitas una suscripción activa para crear tarjetas. Por favor, selecciona un plan."
+        )
+    
+    # Check user's card limit based on subscription
+    user_cards = await db.vcards.count_documents({"user_id": current_user['id'], "is_active": True})
+    
     if user_cards >= max_cards:
         raise HTTPException(
             status_code=403, 
-            detail=f"Card limit reached ({max_cards}). Upgrade your plan for more cards."
+            detail=f"Has alcanzado el límite de tarjetas ({max_cards}). Mejora tu plan para crear más."
         )
     
     vcard = VCard(

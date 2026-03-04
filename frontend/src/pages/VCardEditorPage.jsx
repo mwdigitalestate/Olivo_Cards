@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { VCardForm } from '../components/VCardForm';
 import { VCardPreview } from '../components/VCardPreview';
 import { Button } from '../components/ui/button';
-import { vcardsAPI } from '../lib/api';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { vcardsAPI, subscriptionsAPI } from '../lib/api';
+import { ArrowLeft, Save, Loader2, AlertCircle, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const VCardEditorPage = () => {
@@ -33,14 +33,37 @@ export const VCardEditorPage = () => {
     notes: ''
   });
 
-  const [loading, setLoading] = useState(isEditing);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(true);
 
   useEffect(() => {
-    if (isEditing) {
+    checkSubscription();
+  }, []);
+
+  useEffect(() => {
+    if (isEditing && hasSubscription) {
       loadVCard();
     }
-  }, [id]);
+  }, [id, hasSubscription]);
+
+  const checkSubscription = async () => {
+    try {
+      const response = await subscriptionsAPI.getCurrent();
+      if (response.data && response.data.status === 'active') {
+        setHasSubscription(true);
+      } else {
+        setHasSubscription(false);
+      }
+    } catch (error) {
+      // No subscription
+      setHasSubscription(false);
+    } finally {
+      if (!isEditing) {
+        setLoading(false);
+      }
+    }
+  };
 
   const loadVCard = async () => {
     try {
@@ -86,6 +109,35 @@ export const VCardEditorPage = () => {
       <DashboardLayout>
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5C51E]" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Show subscription required message if user has no active subscription
+  if (!hasSubscription && !isEditing) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-xl mx-auto text-center py-12" data-testid="subscription-required">
+          <div className="bg-[#FEF3C7] border border-[#F59E0B] rounded-lg p-8">
+            <AlertCircle className="w-16 h-16 text-[#F59E0B] mx-auto mb-4" />
+            <h2 
+              className="text-2xl font-bold text-[#3C3C3C] mb-3"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Suscripción Requerida
+            </h2>
+            <p className="text-[#5E5E5E] mb-6">
+              Para crear tarjetas digitales necesitas una suscripción activa. 
+              Selecciona un plan para comenzar - ¡puedes empezar con 15 días de prueba gratis!
+            </p>
+            <Link to="/dashboard/subscription">
+              <Button className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Ver Planes y Suscribirme
+              </Button>
+            </Link>
+          </div>
         </div>
       </DashboardLayout>
     );
