@@ -13,7 +13,9 @@ class PayPalService:
         self.client_secret: Optional[str] = None
         self.mode: str = "sandbox"
         self.access_token: Optional[str] = None
-        self.product_id: Optional[str] = None
+        # Separate product IDs for sandbox and live
+        self.sandbox_product_id: Optional[str] = None
+        self.live_product_id: Optional[str] = None
     
     @property
     def base_url(self) -> str:
@@ -21,11 +23,33 @@ class PayPalService:
             return "https://api-m.paypal.com"
         return "https://api-m.sandbox.paypal.com"
     
+    @property
+    def product_id(self) -> Optional[str]:
+        """Get the product ID for the current mode"""
+        if self.mode == "live":
+            return self.live_product_id
+        return self.sandbox_product_id
+    
+    @product_id.setter
+    def product_id(self, value: Optional[str]):
+        """Set the product ID for the current mode"""
+        if self.mode == "live":
+            self.live_product_id = value
+        else:
+            self.sandbox_product_id = value
+    
     def configure(self, client_id: str, client_secret: str, mode: str = "sandbox"):
+        # Check if mode changed - if so, we need to potentially reset product_id for new mode
+        mode_changed = self.mode != mode
+        credentials_changed = self.client_id != client_id or self.client_secret != client_secret
+        
         self.client_id = client_id
         self.client_secret = client_secret
         self.mode = mode
         self.access_token = None
+        
+        # Log the configuration
+        logger.info(f"PayPal configured for mode: {mode}, product_id: {self.product_id}")
     
     def is_configured(self) -> bool:
         return bool(self.client_id and self.client_secret)
@@ -100,11 +124,14 @@ class PayPalService:
         if not token:
             return None
         
-        # Use provided product_id or create new one
-        prod_id = product_id or self.product_id
+        # Always create a new product for this mode if we don't have one
+        # This ensures sandbox and live have separate products
+        prod_id = self.product_id
         if not prod_id:
+            logger.info(f"Creating new PayPal product for mode: {self.mode}")
             prod_id = await self.create_product()
             if not prod_id:
+                logger.error(f"Failed to create PayPal product for mode: {self.mode}")
                 return None
         
         # Map billing period
