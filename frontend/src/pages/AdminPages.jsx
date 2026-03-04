@@ -695,8 +695,10 @@ export const AdminPlansPage = () => {
 // New Settings Page for PayPal and Email Configuration
 export const AdminSettingsPage = () => {
   const [paypalSettings, setPaypalSettings] = useState({
-    paypal_client_id: '',
-    paypal_secret: '',
+    sandbox_client_id: '',
+    sandbox_secret: '',
+    live_client_id: '',
+    live_secret: '',
     paypal_mode: 'sandbox'
   });
   const [emailSettings, setEmailSettings] = useState({
@@ -709,6 +711,7 @@ export const AdminSettingsPage = () => {
   const [savingEmail, setSavingEmail] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
   const [checkingExpiring, setCheckingExpiring] = useState(false);
+  const [resyncingPlans, setResyncingPlans] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -721,8 +724,10 @@ export const AdminSettingsPage = () => {
         adminAPI.getEmailSettings()
       ]);
       setPaypalSettings({
-        paypal_client_id: paypalRes.data.paypal_client_id || '',
-        paypal_secret: paypalRes.data.paypal_secret || '',
+        sandbox_client_id: paypalRes.data.sandbox_client_id || '',
+        sandbox_secret: paypalRes.data.sandbox_secret || '',
+        live_client_id: paypalRes.data.live_client_id || '',
+        live_secret: paypalRes.data.live_secret || '',
         paypal_mode: paypalRes.data.paypal_mode || 'sandbox'
       });
       setEmailSettings({
@@ -742,10 +747,30 @@ export const AdminSettingsPage = () => {
     try {
       await adminAPI.updatePayPalSettings(paypalSettings);
       toast.success('Configuración de PayPal guardada correctamente');
+      
+      // Ask if user wants to re-sync plans when changing mode
+      if (window.confirm('¿Deseas re-sincronizar los planes con PayPal? Esto es necesario si cambiaste de modo (Sandbox/Live).')) {
+        await handleResyncPlans();
+      }
     } catch (error) {
       toast.error('Error al guardar la configuración de PayPal');
     } finally {
       setSavingPaypal(false);
+    }
+  };
+
+  const handleResyncPlans = async () => {
+    setResyncingPlans(true);
+    try {
+      // First reset all plans
+      await adminAPI.resetAllPayPalPlans();
+      // Then sync all
+      const response = await adminAPI.syncAllPlansWithPayPal();
+      toast.success(`${response.data.synced} planes sincronizados con PayPal`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al sincronizar planes');
+    } finally {
+      setResyncingPlans(false);
     }
   };
 
@@ -943,42 +968,9 @@ export const AdminSettingsPage = () => {
           </div>
 
           <div className="space-y-6">
+            {/* Mode selector */}
             <div className="space-y-2">
-              <Label className="text-[#3C3C3C]">PayPal Client ID</Label>
-              <Input
-                value={paypalSettings.paypal_client_id}
-                onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_client_id: e.target.value })}
-                placeholder="Ingresa tu PayPal Client ID"
-                className="border-[#C3C3C3] font-mono text-sm"
-                data-testid="paypal-client-id-input"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[#3C3C3C]">PayPal Secret (para suscripciones recurrentes)</Label>
-              <Input
-                type="password"
-                value={paypalSettings.paypal_secret}
-                onChange={(e) => setPaypalSettings({ ...paypalSettings, paypal_secret: e.target.value })}
-                placeholder="Ingresa tu PayPal Secret"
-                className="border-[#C3C3C3] font-mono text-sm"
-                data-testid="paypal-secret-input"
-              />
-              <p className="text-xs text-[#808080]">
-                Obtén ambas credenciales en{' '}
-                <a 
-                  href="https://developer.paypal.com/dashboard/applications" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[#818113] hover:underline"
-                >
-                  PayPal Developer Dashboard
-                </a>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[#3C3C3C]">Modo</Label>
+              <Label className="text-[#3C3C3C]">Modo Activo</Label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -1003,41 +995,107 @@ export const AdminSettingsPage = () => {
                   <span className="text-[#3C3C3C]">Live (Producción)</span>
                 </label>
               </div>
+              <p className={`text-xs font-medium ${paypalSettings.paypal_mode === 'live' ? 'text-green-600' : 'text-[#808080]'}`}>
+                {paypalSettings.paypal_mode === 'live' 
+                  ? '✓ Modo producción activo - Se procesarán pagos reales' 
+                  : 'Modo pruebas activo - Los pagos son simulados'}
+              </p>
             </div>
 
-            {/* Status indicator */}
-            <div className={`p-4 rounded-sm flex items-center gap-3 ${
-              paypalSettings.paypal_client_id 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-yellow-50 border border-yellow-200'
-            }`}>
-              {paypalSettings.paypal_client_id ? (
-                <>
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium text-green-800">PayPal configurado</p>
-                    <p className="text-xs text-green-600">Los clientes pueden pagar con PayPal</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <AlertCircle className="w-5 h-5 text-yellow-600" />
-                  <div>
-                    <p className="text-sm font-medium text-yellow-800">PayPal no configurado</p>
-                    <p className="text-xs text-yellow-600">Configura tu Client ID para habilitar pagos</p>
-                  </div>
-                </>
-              )}
+            {/* Sandbox Credentials */}
+            <div className={`p-4 rounded-sm border ${paypalSettings.paypal_mode === 'sandbox' ? 'border-[#C5C51E] bg-[#FFFEF0]' : 'border-[#C3C3C3] bg-gray-50'}`}>
+              <h3 className="font-semibold text-[#3C3C3C] mb-3 flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${paypalSettings.paypal_mode === 'sandbox' ? 'bg-[#C5C51E]' : 'bg-gray-300'}`}></span>
+                Credenciales Sandbox (Pruebas)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[#3C3C3C] text-sm">Client ID</Label>
+                  <Input
+                    value={paypalSettings.sandbox_client_id}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, sandbox_client_id: e.target.value })}
+                    placeholder="Sandbox Client ID"
+                    className="border-[#C3C3C3] font-mono text-xs"
+                    data-testid="sandbox-client-id-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[#3C3C3C] text-sm">Secret</Label>
+                  <Input
+                    type="password"
+                    value={paypalSettings.sandbox_secret}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, sandbox_secret: e.target.value })}
+                    placeholder="Sandbox Secret"
+                    className="border-[#C3C3C3] font-mono text-xs"
+                    data-testid="sandbox-secret-input"
+                  />
+                </div>
+              </div>
             </div>
 
-            <Button
-              onClick={handleSavePaypal}
-              disabled={savingPaypal}
-              className="bg-[#C5C51E] hover:bg-[#A3A318] text-black font-semibold"
-              data-testid="save-paypal-settings-btn"
-            >
-              {savingPaypal ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" />Guardar PayPal</>}
-            </Button>
+            {/* Live Credentials */}
+            <div className={`p-4 rounded-sm border ${paypalSettings.paypal_mode === 'live' ? 'border-green-500 bg-green-50' : 'border-[#C3C3C3] bg-gray-50'}`}>
+              <h3 className="font-semibold text-[#3C3C3C] mb-3 flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${paypalSettings.paypal_mode === 'live' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                Credenciales Live (Producción)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[#3C3C3C] text-sm">Client ID</Label>
+                  <Input
+                    value={paypalSettings.live_client_id}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, live_client_id: e.target.value })}
+                    placeholder="Live Client ID"
+                    className="border-[#C3C3C3] font-mono text-xs"
+                    data-testid="live-client-id-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[#3C3C3C] text-sm">Secret</Label>
+                  <Input
+                    type="password"
+                    value={paypalSettings.live_secret}
+                    onChange={(e) => setPaypalSettings({ ...paypalSettings, live_secret: e.target.value })}
+                    placeholder="Live Secret"
+                    className="border-[#C3C3C3] font-mono text-xs"
+                    data-testid="live-secret-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#808080]">
+              Obtén las credenciales en{' '}
+              <a 
+                href="https://developer.paypal.com/dashboard/applications" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[#818113] hover:underline"
+              >
+                PayPal Developer Dashboard
+              </a>
+            </p>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleSavePaypal}
+                disabled={savingPaypal}
+                className="bg-[#003087] hover:bg-[#00266D] text-white font-semibold"
+                data-testid="save-paypal-settings-btn"
+              >
+                {savingPaypal ? 'Guardando...' : <><Save className="w-4 h-4 mr-2" />Guardar PayPal</>}
+              </Button>
+              
+              <Button
+                onClick={handleResyncPlans}
+                disabled={resyncingPlans}
+                variant="outline"
+                className="border-[#003087] text-[#003087]"
+                data-testid="resync-plans-btn"
+              >
+                {resyncingPlans ? 'Sincronizando...' : 'Re-sincronizar Planes'}
+              </Button>
+            </div>
           </div>
         </div>
 

@@ -77,10 +77,19 @@ async def get_email_service() -> EmailService:
 async def get_paypal_service() -> PayPalService:
     settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
     if settings:
+        mode = settings.get("paypal_mode", "sandbox")
+        # Use credentials based on current mode
+        if mode == "live":
+            client_id = settings.get("live_client_id", settings.get("paypal_client_id", ""))
+            client_secret = settings.get("live_secret", settings.get("paypal_secret", ""))
+        else:
+            client_id = settings.get("sandbox_client_id", settings.get("paypal_client_id", ""))
+            client_secret = settings.get("sandbox_secret", settings.get("paypal_secret", ""))
+        
         paypal_service.configure(
-            client_id=settings.get("paypal_client_id", ""),
-            client_secret=settings.get("paypal_secret", ""),
-            mode=settings.get("paypal_mode", "sandbox")
+            client_id=client_id,
+            client_secret=client_secret,
+            mode=mode
         )
     return paypal_service
 
@@ -88,14 +97,21 @@ async def get_paypal_service() -> PayPalService:
 
 # Settings Model for PayPal configuration
 class PayPalSettingsUpdate(BaseModel):
-    paypal_client_id: Optional[str] = None
-    paypal_secret: Optional[str] = None
+    sandbox_client_id: Optional[str] = None
+    sandbox_secret: Optional[str] = None
+    live_client_id: Optional[str] = None
+    live_secret: Optional[str] = None
     paypal_mode: Optional[str] = "sandbox"  # sandbox or live
 
 class SettingsResponse(BaseModel):
+    sandbox_client_id: Optional[str] = None
+    sandbox_secret: Optional[str] = None
+    live_client_id: Optional[str] = None
+    live_secret: Optional[str] = None
+    paypal_mode: str = "sandbox"
+    # For backward compatibility
     paypal_client_id: Optional[str] = None
     paypal_secret: Optional[str] = None
-    paypal_mode: str = "sandbox"
 
 class EmailSettingsUpdate(BaseModel):
     smtp_email: Optional[str] = None
@@ -899,10 +915,25 @@ async def get_settings(admin: dict = Depends(get_admin_user)):
     settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
     if not settings:
         return SettingsResponse()
+    
+    mode = settings.get("paypal_mode", "sandbox")
+    
+    # Get current credentials based on mode (for backward compat)
+    if mode == "live":
+        current_client_id = settings.get("live_client_id", "")
+        current_secret = settings.get("live_secret", "")
+    else:
+        current_client_id = settings.get("sandbox_client_id", "")
+        current_secret = settings.get("sandbox_secret", "")
+    
     return SettingsResponse(
-        paypal_client_id=settings.get("paypal_client_id"),
-        paypal_secret=settings.get("paypal_secret"),
-        paypal_mode=settings.get("paypal_mode", "sandbox")
+        sandbox_client_id=settings.get("sandbox_client_id"),
+        sandbox_secret=settings.get("sandbox_secret"),
+        live_client_id=settings.get("live_client_id"),
+        live_secret=settings.get("live_secret"),
+        paypal_mode=mode,
+        paypal_client_id=current_client_id,
+        paypal_secret=current_secret
     )
 
 @api_router.put("/admin/settings/paypal")
@@ -1008,12 +1039,26 @@ async def check_expiring_subscriptions(background_tasks: BackgroundTasks, admin:
 async def get_paypal_client_id():
     """Public endpoint to get PayPal client ID for frontend"""
     settings = await db.settings.find_one({"type": "paypal"}, {"_id": 0})
-    if not settings or not settings.get("paypal_client_id"):
+    if not settings:
         return {"client_id": None, "mode": "sandbox", "has_secret": False}
+    
+    mode = settings.get("paypal_mode", "sandbox")
+    
+    # Get credentials based on mode
+    if mode == "live":
+        client_id = settings.get("live_client_id", "")
+        has_secret = bool(settings.get("live_secret"))
+    else:
+        client_id = settings.get("sandbox_client_id", "")
+        has_secret = bool(settings.get("sandbox_secret"))
+    
+    if not client_id:
+        return {"client_id": None, "mode": mode, "has_secret": False}
+    
     return {
-        "client_id": settings.get("paypal_client_id"),
-        "mode": settings.get("paypal_mode", "sandbox"),
-        "has_secret": bool(settings.get("paypal_secret"))
+        "client_id": client_id,
+        "mode": mode,
+        "has_secret": has_secret
     }
 
 # ==================== PAYPAL RECURRING SUBSCRIPTIONS ====================
