@@ -32,7 +32,7 @@ def get_app_url():
             for line in f:
                 if line.startswith('APP_URL='):
                     return line.split('=', 1)[1].strip().strip('"').strip("'")
-    return 'https://olivo-cards-preview.preview.emergentagent.com'
+    raise ValueError("APP_URL must be set in backend/.env file")
 
 APP_URL = get_app_url()
 
