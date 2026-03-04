@@ -36,8 +36,10 @@ def get_app_url():
 
 APP_URL = get_app_url()
 
-# JWT Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-super-secret-key-change-in-production')
+# JWT Configuration - JWT_SECRET must be set in .env
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET environment variable must be set for security")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
