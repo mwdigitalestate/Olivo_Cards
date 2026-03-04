@@ -7,30 +7,32 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 
 ### 1. User Management
 - User registration and login (JWT-based authentication)
+- Password reset functionality
 - User roles: `user` and `admin`
 - Admin can manage all users
 
 ### 2. Digital Business Cards (vCards)
 - Create, edit, delete digital business cards
+- **REQUIRES ACTIVE SUBSCRIPTION** - Users must subscribe before creating cards
 - QR code generation for each card
 - Public card view accessible without login
 - vCard format export for contact saving
 - **Image upload from device** for profile photos
 
 ### 3. Subscription Plans
-- **Básico (Free):** 1 card, basic features
-- **Profesional ($9.99/month):** 5 cards, full features, **15 días gratis**
-- **Empresarial ($29.99/month):** 25 cards, API access, team management
+- **Básico ($2.99/month):** 1 card, basic features, **15 días gratis**
+- **Profesional ($9.99/month):** 5 cards, full features (MÁS POPULAR)
+- **Empresarial ($29.99/month):** 25 cards, dedicated support
 - **Trial Period:** Configurable free trial days per plan
 
-### 4. PayPal Recurring Payments ✅ IMPLEMENTED
-- Automatic monthly/yearly subscription billing
-- PayPal Subscriptions API integration
-- Admin can sync plans with PayPal
-- **Trial periods with PayPal native billing cycles**
+### 4. PayPal Recurring Payments ✅ FULLY WORKING
+- **Dual credentials:** Sandbox (testing) AND Live (production)
+- Automatic mode selection based on selected mode
+- Trial periods with PayPal native billing cycles
 - Users must link PayPal to activate trial
 - Automatic payment after trial ends
 - Webhook handling for payment events
+- **Re-sync plans** button when changing modes
 
 ### 5. Email Notifications (Pending Configuration)
 - Welcome email on registration
@@ -42,7 +44,7 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 ### 6. Admin Dashboard
 - User management (view, edit role, delete)
 - Plan management (CRUD + trial_days configuration)
-- PayPal configuration
+- **PayPal configuration with Sandbox/Live credentials**
 - Email SMTP configuration
 - Statistics dashboard
 
@@ -52,8 +54,8 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - FastAPI (Python)
 - MongoDB (Motor async driver)
 - JWT authentication
-- PayPal Subscriptions API
-- **File uploads (local storage)**
+- PayPal Subscriptions API (dual mode)
+- File uploads (local storage)
 - aiosmtplib for emails
 
 ### Frontend
@@ -61,7 +63,35 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - React Router
 - Tailwind CSS
 - shadcn/ui components
-- @paypal/react-paypal-js
+
+## Deployment Notes
+
+### When deploying to production:
+1. Update `APP_URL` in `/app/backend/.env` with your custom domain
+2. Go to Admin → Configuración → PayPal
+3. Switch mode to "Live (Producción)"
+4. Verify your Live credentials are entered
+5. Click "Re-sincronizar Planes" to create plans in PayPal Live
+6. PayPal will automatically use the Live credentials
+
+### Custom Domain Configuration
+- PayPal will work with any domain
+- Just update APP_URL and re-sync plans after changing modes
+
+## Test Credentials
+- **Admin:** admin@vcardpro.com / admin123
+
+## Database Collections
+- `users` - User accounts
+- `vcards` - Digital business cards
+- `plans` - Subscription plans (includes trial_days, paypal_plan_id)
+- `subscriptions` - User subscriptions
+- `settings` - PayPal and email configuration (includes sandbox/live credentials)
+
+---
+
+*Last Updated: March 4, 2026*
+*Developed by MW Digital Estate - https://maldivasweb.com*
 
 ## API Endpoints
 
