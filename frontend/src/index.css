@@ -215,6 +215,14 @@
     border-color: var(--olivo-primary);
 }
 
+/* Hide Emergent Badge */
+#emergent-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 @layer base {
     [data-debug-wrapper="true"] {
         display: contents !important;

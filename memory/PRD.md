@@ -168,6 +168,8 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - **Trial badges on pricing cards**
 - **"Probar X días gratis" buttons**
 - **Trial checkout notices**
+- **Site title: "Business Cards by Olivo Recicla"**
+- **"Made with Emergent" badge hidden via CSS**
 
 ## Pending Features
 
@@ -213,5 +215,5 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 
 ---
 
-*Last Updated: February 20, 2026*
+*Last Updated: December 2025*
 *Developed by MW Digital Estate - https://maldivasweb.com*
