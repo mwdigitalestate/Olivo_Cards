@@ -51,11 +51,11 @@ db = client[os.environ['DB_NAME']]
 # Create the main app
 app = FastAPI()
 
-# Mount static files for uploads
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
-
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# Mount static files for uploads under /api/uploads
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Security
 security = HTTPBearer()
@@ -652,8 +652,8 @@ async def upload_image(file: UploadFile = File(...), current_user: dict = Depend
     with open(file_path, "wb") as f:
         f.write(content)
     
-    # Return URL - use APP_URL constant
-    image_url = f"{APP_URL}/uploads/{filename}"
+    # Return URL - use APP_URL constant with /api/uploads prefix
+    image_url = f"{APP_URL}/api/uploads/{filename}"
     
     logger.info(f"Image uploaded: {filename} by user {current_user['id']}")
     
