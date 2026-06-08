@@ -169,9 +169,9 @@ export const LandingPage = () => {
                       className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-white"
                     />
                     <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      María García
+                      Mario Garcia
                     </h3>
-                    <p className="text-[#A2A2A2]">Directora de Marketing</p>
+                    <p className="text-[#A2A2A2]">Director de Marketing</p>
                     <p className="text-[#C5C51E] font-medium">TechCorp Inc.</p>
                   </div>
                   
