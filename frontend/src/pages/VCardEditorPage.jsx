@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { VCardForm } from '../components/VCardForm';
@@ -37,45 +37,47 @@ export const VCardEditorPage = () => {
   const [saving, setSaving] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(true);
 
-  const checkSubscription = useCallback(async () => {
-    try {
-      const response = await subscriptionsAPI.getCurrent();
-      if (response.data && response.data.status === 'active') {
-        setHasSubscription(true);
-      } else {
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const response = await subscriptionsAPI.getCurrent();
+        if (response.data && response.data.status === 'active') {
+          setHasSubscription(true);
+        } else {
+          setHasSubscription(false);
+        }
+      } catch (error) {
+        // No subscription
         setHasSubscription(false);
+      } finally {
+        if (!isEditing) {
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      // No subscription
-      setHasSubscription(false);
-    } finally {
-      if (!isEditing) {
+    };
+
+    checkSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadVCard = async () => {
+      try {
+        const response = await vcardsAPI.getOne(id);
+        setFormData(response.data);
+      } catch (error) {
+        toast.error('Error al cargar la tarjeta');
+        navigate('/dashboard');
+      } finally {
         setLoading(false);
       }
-    }
-  }, [isEditing]);
+    };
 
-  const loadVCard = useCallback(async () => {
-    try {
-      const response = await vcardsAPI.getOne(id);
-      setFormData(response.data);
-    } catch (error) {
-      toast.error('Error al cargar la tarjeta');
-      navigate('/dashboard');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, navigate]);
-
-  useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
-
-  useEffect(() => {
     if (isEditing && hasSubscription) {
       loadVCard();
     }
-  }, [isEditing, hasSubscription, loadVCard]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, hasSubscription]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

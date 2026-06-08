@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { VCardPreview } from '../components/VCardPreview';
 import { vcardsAPI } from '../lib/api';
@@ -13,20 +13,21 @@ export const PublicVCardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadVCard = useCallback(async () => {
-    try {
-      const response = await vcardsAPI.getPublic(id);
-      setVCard(response.data);
-    } catch (err) {
-      setError('Tarjeta no encontrada');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
+    const loadVCard = async () => {
+      try {
+        const response = await vcardsAPI.getPublic(id);
+        setVCard(response.data);
+      } catch (err) {
+        setError('Tarjeta no encontrada');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadVCard();
-  }, [loadVCard]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (loading) {
     return (

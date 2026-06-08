@@ -66,34 +66,35 @@ export const SubscriptionPage = () => {
     }
   }, [searchParams, navigate, user, updateUser]);
 
-  const loadData = useCallback(async () => {
-    try {
-      const [plansRes, subRes, paypalRes] = await Promise.all([
-        plansAPI.getAll(),
-        subscriptionsAPI.getCurrent(),
-        settingsAPI.getPayPalClientId()
-      ]);
-      
-      setPlans(plansRes.data);
-      setPaypalConfig(paypalRes.data);
-      
-      if (subRes.data) {
-        setCurrentSubscription(subRes.data);
-        const plan = plansRes.data.find(p => p.id === subRes.data.plan_id);
-        setCurrentPlan(plan);
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading data:', error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [plansRes, subRes, paypalRes] = await Promise.all([
+          plansAPI.getAll(),
+          subscriptionsAPI.getCurrent(),
+          settingsAPI.getPayPalClientId()
+        ]);
+        
+        setPlans(plansRes.data);
+        setPaypalConfig(paypalRes.data);
+        
+        if (subRes.data) {
+          setCurrentSubscription(subRes.data);
+          const plan = plansRes.data.find(p => p.id === subRes.data.plan_id);
+          setCurrentPlan(plan);
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading data:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadData();
-  }, [loadData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     handlePayPalReturn();
