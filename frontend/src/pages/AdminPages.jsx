@@ -736,7 +736,9 @@ export const AdminSettingsPage = () => {
         is_configured: emailRes.data.is_configured || false
       });
     } catch (error) {
-      console.error('Error loading settings:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading settings:', error);
+      }
     } finally {
       setLoading(false);
     }

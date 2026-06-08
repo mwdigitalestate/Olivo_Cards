@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { VCardForm } from '../components/VCardForm';
@@ -37,17 +37,7 @@ export const VCardEditorPage = () => {
   const [saving, setSaving] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(true);
 
-  useEffect(() => {
-    checkSubscription();
-  }, []);
-
-  useEffect(() => {
-    if (isEditing && hasSubscription) {
-      loadVCard();
-    }
-  }, [id, hasSubscription]);
-
-  const checkSubscription = async () => {
+  const checkSubscription = useCallback(async () => {
     try {
       const response = await subscriptionsAPI.getCurrent();
       if (response.data && response.data.status === 'active') {
@@ -63,9 +53,9 @@ export const VCardEditorPage = () => {
         setLoading(false);
       }
     }
-  };
+  }, [isEditing]);
 
-  const loadVCard = async () => {
+  const loadVCard = useCallback(async () => {
     try {
       const response = await vcardsAPI.getOne(id);
       setFormData(response.data);
@@ -75,7 +65,17 @@ export const VCardEditorPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
+
+  useEffect(() => {
+    if (isEditing && hasSubscription) {
+      loadVCard();
+    }
+  }, [isEditing, hasSubscription, loadVCard]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

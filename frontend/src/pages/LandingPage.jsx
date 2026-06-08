@@ -70,7 +70,9 @@ export const LandingPage = () => {
         const response = await plansAPI.getAll();
         setPlans(response.data);
       } catch (error) {
-        console.error('Error loading plans:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error loading plans:', error);
+        }
       } finally {
         setLoadingPlans(false);
       }
@@ -194,7 +196,7 @@ export const LandingPage = () => {
                   <div className="mt-6 bg-white p-4 rounded-sm mx-auto w-fit">
                     <div className="w-24 h-24 bg-[#F5F5F5] grid grid-cols-4 gap-0.5 p-1">
                       {[...Array(16)].map((_, i) => (
-                        <div key={i} className={`${Math.random() > 0.5 ? 'bg-[#3C3C3C]' : 'bg-white'}`} />
+                        <div key={`qr-pixel-${i}`} className={`${Math.random() > 0.5 ? 'bg-[#3C3C3C]' : 'bg-white'}`} />
                       ))}
                     </div>
                   </div>

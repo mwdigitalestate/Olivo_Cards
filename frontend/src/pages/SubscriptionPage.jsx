@@ -55,7 +55,9 @@ export const SubscriptionPage = () => {
           updateUser({ ...user, subscription_id: subRes.data.plan_id });
         }
       } catch (error) {
-        console.error('Error activating subscription:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error activating subscription:', error);
+        }
         toast.error(error.response?.data?.detail || 'Error al activar la suscripción');
         localStorage.removeItem('pending_paypal_subscription');
       } finally {
@@ -64,15 +66,7 @@ export const SubscriptionPage = () => {
     }
   }, [searchParams, navigate, user, updateUser]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  useEffect(() => {
-    handlePayPalReturn();
-  }, [handlePayPalReturn]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [plansRes, subRes, paypalRes] = await Promise.all([
         plansAPI.getAll(),
@@ -89,11 +83,21 @@ export const SubscriptionPage = () => {
         setCurrentPlan(plan);
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading data:', error);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    handlePayPalReturn();
+  }, [handlePayPalReturn]);
 
   const handleFreePlan = async (plan) => {
     setProcessing(true);
@@ -150,7 +154,9 @@ export const SubscriptionPage = () => {
         toast.error('Error al crear la suscripción. Por favor intenta de nuevo.');
       }
     } catch (error) {
-      console.error('PayPal subscription error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('PayPal subscription error:', error);
+      }
       toast.error(error.response?.data?.detail || 'Error al procesar la suscripción');
     } finally {
       setProcessing(false);

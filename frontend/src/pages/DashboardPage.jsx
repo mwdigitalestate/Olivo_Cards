@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { VCardPreview } from '../components/VCardPreview';
@@ -25,21 +25,23 @@ export const DashboardPage = () => {
   const [deleteCard, setDeleteCard] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    loadVCards();
-  }, []);
-
-  const loadVCards = async () => {
+  const loadVCards = useCallback(async () => {
     try {
       const response = await vcardsAPI.getAll();
       setVCards(response.data);
     } catch (error) {
-      console.error('Error loading vcards:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading vcards:', error);
+      }
       toast.error('Error al cargar las tarjetas');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadVCards();
+  }, [loadVCards]);
 
   const handleDelete = async () => {
     if (!deleteCard) return;

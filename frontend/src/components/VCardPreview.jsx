@@ -110,7 +110,9 @@ export const VCardPreview = ({ vcard, showActions = true, className }) => {
           url: shareUrl,
         });
       } catch (err) {
-        console.log('Share cancelled');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Share cancelled');
+        }
       }
     } else {
       navigator.clipboard.writeText(shareUrl);

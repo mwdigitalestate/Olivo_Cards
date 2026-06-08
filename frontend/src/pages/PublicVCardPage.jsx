@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { VCardPreview } from '../components/VCardPreview';
 import { vcardsAPI } from '../lib/api';
@@ -13,11 +13,7 @@ export const PublicVCardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadVCard();
-  }, [id]);
-
-  const loadVCard = async () => {
+  const loadVCard = useCallback(async () => {
     try {
       const response = await vcardsAPI.getPublic(id);
       setVCard(response.data);
@@ -26,7 +22,11 @@ export const PublicVCardPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadVCard();
+  }, [loadVCard]);
 
   if (loading) {
     return (
