@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { useAuth } from '../../context/AuthContext';
 import { Menu, X } from 'lucide-react';
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/hhh3zakr_LOGO%20OLIVO%20CARDS.png";
+const LOGO_URL = "/logo.png";
 
 export const PublicLayout = ({ children }) => {
   const { isAuthenticated } = useAuth();

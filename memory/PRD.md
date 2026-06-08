@@ -3,6 +3,14 @@
 ## Original Problem Statement
 SaaS application for digital business cards called "Olivo Cards" that allows users to create digital business cards (vCards) accessible via QR codes.
 
+## Branding
+- **App Name:** Olivo Cards
+- **Site Title:** Business Cards by Olivo Recicla
+- **Logo:** OLIVO B.CARDS (olive green text with blue "B")
+- **Favicon:** Blue "B" icon with pink dot
+- **Colors:** Olive green (#C5C51E) primary, neutral grays, accent yellow
+- **Footer:** Desarrollado por MW Digital Estate
+
 ## Core Features
 
 ### 1. User Management
@@ -169,7 +177,9 @@ SaaS application for digital business cards called "Olivo Cards" that allows use
 - **"Probar X días gratis" buttons**
 - **Trial checkout notices**
 - **Site title: "Business Cards by Olivo Recicla"**
-- **"Made with Emergent" badge hidden via CSS**
+- **New logo: OLIVO B.CARDS (olive green + blue) across all pages**
+- **New favicon: Blue "B" icon with pink dot**
+- **"Made with Emergent" badge completely removed**
 
 ## Pending Features
 

@@ -7,7 +7,7 @@ import { authAPI } from '../lib/api';
 import { toast } from 'sonner';
 import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/hhh3zakr_LOGO%20OLIVO%20CARDS.png";
+const LOGO_URL = "/logo.png";
 
 export const ResetPasswordPage = () => {
   const navigate = useNavigate();

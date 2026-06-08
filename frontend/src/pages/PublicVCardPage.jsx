@@ -5,7 +5,7 @@ import { vcardsAPI } from '../lib/api';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_offline-qr-cards/artifacts/hhh3zakr_LOGO%20OLIVO%20CARDS.png";
+const LOGO_URL = "/logo.png";
 
 export const PublicVCardPage = () => {
   const { id } = useParams();
